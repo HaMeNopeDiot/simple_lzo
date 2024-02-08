@@ -35,17 +35,6 @@
 #define NEED_OP(x)      if (!HAVE_OP(x)) goto output_overrun
 #define TEST_LB(m_pos)  if ((m_pos) < out) goto lookbehind_overrun
 
-
-
-/*
-#define __get_unaligned_t(type, ptr) ({						\
-	const struct { type x; } __attribute__((__packed__)) *__pptr = (typeof(__pptr))(ptr);	\
-	__pptr->x;								\
-})
-*/
-
-
-
 /* This MAX_255_COUNT is the maximum number of times we can add 255 to a base
  * count without overflowing an integer. The multiply will overflow when
  * multiplying 255 by more than MAXINT/255. The sum will overflow earlier
