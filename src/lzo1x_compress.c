@@ -44,32 +44,6 @@ next:
 		if (dv == 0 && bitstream_version) {
 			const unsigned char *ir = ip + 4;
 			const unsigned char *limit = min(ip_end, ip + MAX_ZERO_RUN_LENGTH + 1);
-#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && \
-	defined(LZO_FAST_64BIT_MEMORY_ACCESS)
-			u64 dv64;
-
-			for (; (ir + 32) <= limit; ir += 32) {
-				dv64 = get_unaligned((u64 *)ir);
-				dv64 |= get_unaligned((u64 *)ir + 1);
-				dv64 |= get_unaligned((u64 *)ir + 2);
-				dv64 |= get_unaligned((u64 *)ir + 3);
-				if (dv64)
-					break;
-			}
-			for (; (ir + 8) <= limit; ir += 8) {
-				dv64 = get_unaligned((u64 *)ir);
-				if (dv64) {
-#  if defined(__LITTLE_ENDIAN)
-					ir += __builtin_ctzll(dv64) >> 3;
-#  elif defined(__BIG_ENDIAN)
-					ir += __builtin_clzll(dv64) >> 3;
-#  else
-#    error "missing endian definition"
-#  endif
-					break;зз
-				}
-			}
-#else
 			while ((ir < (const unsigned char *)
 					ALIGN((uintptr_t)ir, 4)) &&
 					(ir < limit) && (*ir == 0))
@@ -89,7 +63,6 @@ next:
 					}
 				}
 			}
-#endif
 			while (likely(ir < limit) && unlikely(*ir == 0))
 				ir++;
 			run_length = ir - ip;
@@ -154,52 +127,6 @@ next:
 
 		m_len = 4;
 		{
-#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && defined(LZO_USE_CTZ64)
-		u64 v;
-		v = get_unaligned((const u64 *) (ip + m_len)) ^
-		    get_unaligned((const u64 *) (m_pos + m_len));
-		if (unlikely(v == 0)) {
-			do {
-				m_len += 8;
-				v = get_unaligned((const u64 *) (ip + m_len)) ^
-				    get_unaligned((const u64 *) (m_pos + m_len));
-				if (unlikely(ip + m_len >= ip_end))
-					goto m_len_done;
-			} while (v == 0);
-		}
-#  if defined(__LITTLE_ENDIAN)
-		m_len += (unsigned) __builtin_ctzll(v) / 8;
-#  elif defined(__BIG_ENDIAN)
-		m_len += (unsigned) __builtin_clzll(v) / 8;
-#  else
-#    error "missing endian definition"
-#  endif
-#elif defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && defined(LZO_USE_CTZ32)
-		u32 v;
-		v = get_unaligned((const u32 *) (ip + m_len)) ^
-		    get_unaligned((const u32 *) (m_pos + m_len));
-		if (unlikely(v == 0)) {
-			do {
-				m_len += 4;
-				v = get_unaligned((const u32 *) (ip + m_len)) ^
-				    get_unaligned((const u32 *) (m_pos + m_len));
-				if (v != 0)
-					break;
-				m_len += 4;
-				v = get_unaligned((const u32 *) (ip + m_len)) ^
-				    get_unaligned((const u32 *) (m_pos + m_len));
-				if (unlikely(ip + m_len >= ip_end))
-					goto m_len_done;
-			} while (v == 0);
-		}
-#  if defined(__LITTLE_ENDIAN)
-		m_len += (unsigned) __builtin_ctz(v) / 8;
-#  elif defined(__BIG_ENDIAN)
-		m_len += (unsigned) __builtin_clz(v) / 8;
-#  else
-#    error "missing endian definition"
-#  endif
-#else
 		if (unlikely(ip[m_len] == m_pos[m_len])) {
 			do {
 				m_len += 1;
@@ -228,7 +155,6 @@ next:
 					goto m_len_done;
 			} while (ip[m_len] == m_pos[m_len]);
 		}
-#endif
 		}
 m_len_done:
 
