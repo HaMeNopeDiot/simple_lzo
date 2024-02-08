@@ -14,25 +14,30 @@ void lzo_compress(file_buf_t* src, file_buf_t* dst)
     free(wrkmem);
 }
 
+void lzo_decompress(file_buf_t* src, file_buf_t* dst)
+{
+    int lzo1x_1_dec_status = lzo1x_decompress_safe(src->buf, src->size_buf, dst->buf, &(dst->size_buf));
+    printf("@ Decompression status: %d\n", lzo1x_1_dec_status);
+}
+
+double get_time_in_seconds(clock_t begin, clock_t end)
+{
+    return (double)(end - begin) / CLOCKS_PER_SEC;
+}
+
+
 int main() 
 {
     clock_t begin_compress = clock();
-    char* path_in = "test/case-4/text.txt";
-    char* path_comp = "test/case-4/text_c.lzo";
-    char* path_decc = "test/case-4/text_d.txt";
+    char* path_in = "test/case-3/text.txt";
+    char* path_comp = "test/case-3/text_c.lzo";
+    char* path_decc = "test/case-3/text_d.txt";
     
     file_buf_t* src = file_buf_read_file(path_in);
     file_buf_t* dst = file_buf_t_init(src->size_buf);
 
     //Compressing
     lzo_compress(src, dst);
-    
-
-    //src check
-    //file_buf_printf_check(src, "src");
-
-    //dst check
-    //file_buf_printf_check(dst, "dst");
 
     //write dst in file
     file_buf_write_file(path_comp, dst);
@@ -42,22 +47,11 @@ int main()
     //read file to src2
     file_buf_t* src2 = file_buf_read_file(path_comp);
 
-    //Check if this equal
-    //int status_compare = file_buf_compare(*src2, *dst);
-    //printf("status comparing: %d\n", status_compare);
-
     //Size like a inital size
     file_buf_t* dec = file_buf_t_init(src->size_buf);
 
-    //src2 check
-    //file_buf_printf_check(src2, "src2");
-
     // Decompress
-    int lzo1x_1_dec_status = lzo1x_decompress_safe(src2->buf, src2->size_buf, dec->buf, &(dec->size_buf));
-    printf("@ Decompression status: %d\n", lzo1x_1_dec_status);
-
-    //dec check
-    //file_buf_printf_check(dec, "dec");
+    lzo_decompress(src2, dec);
     
     //write dec in file
     file_buf_write_file(path_decc, dec);
@@ -74,10 +68,11 @@ int main()
     file_buf_free(dec);
     //
 
-    double time_spent_compressing = (double)(end_compress - begin_compress) / CLOCKS_PER_SEC;
-    double time_spent_decompressing = (double)(end_decompress - begin_decompress) / CLOCKS_PER_SEC;
+    // Time counting
+    double time_spent_compressing = get_time_in_seconds(begin_compress, end_compress);
+    double time_spent_decompressing = get_time_in_seconds(begin_decompress, end_decompress);
 
-    printf("@ Done!\nTime used for compress: %f\nTime used for decompress: %f\nTotal: %f\n", time_spent_compressing, time_spent_decompressing, time_spent_compressing + time_spent_decompressing);
+    printf("@ Done!\nTime used for compress: %fs\nTime used for decompress: %fs\nTotal: %fs\n", time_spent_compressing, time_spent_decompressing, time_spent_compressing + time_spent_decompressing);
     
     return 0;
 }
