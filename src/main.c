@@ -62,57 +62,61 @@ char* get_full_path(char* file, char* folder)
 #define DEFAULT_COMP_OUT "text_c.lzo"
 #define DEFAULT_DECOMP_OUT "text_d.txt"
 
-int main() 
+int main(int argc, char *argv[])
 {
-    char* path_in = strdup("test/case-3/text.txt");
+    if(argc == 2) {
+        char* path_in = strdup(argv[1]);
+        char* folder = get_folder(path_in);
+        char* path_comp = get_full_path(DEFAULT_COMP_OUT, folder);
+        char* path_decc = get_full_path(DEFAULT_DECOMP_OUT, folder);
+        
+        file_buf_t* src = file_buf_read_file(path_in);
+        file_buf_t* dst = file_buf_t_init(src->size_buf);
 
-    char* folder = get_folder(path_in);
+        //Compressing
+        clock_t begin_compress = clock();
+        lzo_compress(src, dst);
+        clock_t end_compress = clock();
 
-    char* path_comp = get_full_path(DEFAULT_COMP_OUT, folder);
-    char* path_decc = get_full_path(DEFAULT_DECOMP_OUT, folder);
-    
-    file_buf_t* src = file_buf_read_file(path_in);
-    file_buf_t* dst = file_buf_t_init(src->size_buf);
+        //write dst in file
+        file_buf_write_file(path_comp, dst);
 
-    //Compressing
-    clock_t begin_compress = clock();
-    lzo_compress(src, dst);
-    clock_t end_compress = clock();
+        //read file to src2
+        file_buf_t* src2 = file_buf_read_file(path_comp);
+        file_buf_t* dec = file_buf_t_init(src->size_buf); //Size like a inital size
 
-    //write dst in file
-    file_buf_write_file(path_comp, dst);
+        // Decompress
+        clock_t begin_decompress = clock();
+        lzo_decompress(src2, dec);
+        clock_t end_decompress = clock();
+        
+        //write dec in file
+        file_buf_write_file(path_decc, dec);
 
-    //read file to src2
-    file_buf_t* src2 = file_buf_read_file(path_comp);
-    file_buf_t* dec = file_buf_t_init(src->size_buf); //Size like a inital size
+        //Check if src and dec equal 
+        int status_compare2 = file_buf_compare(*src, *dec);
+        printf("status comparing: %d\n", status_compare2);
+        
+        // Free memory
+        file_buf_free(src);
+        file_buf_free(dst);
+        file_buf_free(src2);
+        file_buf_free(dec);
+        free(path_in);
+        free(path_comp);
+        free(path_decc);
+        //
 
-    // Decompress
-    clock_t begin_decompress = clock();
-    lzo_decompress(src2, dec);
-    clock_t end_decompress = clock();
-    
-    //write dec in file
-    file_buf_write_file(path_decc, dec);
+        // Time counting
+        double time_spent_compressing = get_time_in_seconds(begin_compress, end_compress);
+        double time_spent_decompressing = get_time_in_seconds(begin_decompress, end_decompress);
 
-    //Check if src and dec equal 
-    int status_compare2 = file_buf_compare(*src, *dec);
-    printf("status comparing: %d\n", status_compare2);
-    
-    // Free memory
-    file_buf_free(src);
-    file_buf_free(dst);
-    file_buf_free(src2);
-    file_buf_free(dec);
-    free(path_in);
-    free(path_comp);
-    free(path_decc);
-    //
+        printf("@ Done!\nTime used for compress: %fs\nTime used for decompress: %fs\nTotal: %fs\n", time_spent_compressing, time_spent_decompressing, time_spent_compressing + time_spent_decompressing);
+    } else {
+        printf("Someting get wrong!\n");
+        return 1;
+    }
 
-    // Time counting
-    double time_spent_compressing = get_time_in_seconds(begin_compress, end_compress);
-    double time_spent_decompressing = get_time_in_seconds(begin_decompress, end_decompress);
-
-    printf("@ Done!\nTime used for compress: %fs\nTime used for decompress: %fs\nTotal: %fs\n", time_spent_compressing, time_spent_decompressing, time_spent_compressing + time_spent_decompressing);
     
     return 0;
 }
