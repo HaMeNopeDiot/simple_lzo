@@ -4,15 +4,20 @@
 #include <stdlib.h>
 #include "lzo.h"
 
+
+#include "verbose.h"
 #include "file_buf.h"
 #include "parse_args.h"
-#include "verbose.h"
 
 
 #define DEFAULT_INPUT_FILE "text.txt"
 #define DEFAULT_COMP_OUT "text_c.lzo"
 #define DEFAULT_DECOMP_OUT "text_d.txt"
 #define DEFAULT_SRC_SIZE_FILE "src_size.txt"
+
+#define DEFAULT_SIZE_FILE_TAG "_size"
+#define DEFAULT_SIZE_FILE_FORMAT "txt"
+#define DEFAULT_SEPARATOR '.'
 
 double get_time_in_seconds(clock_t begin, clock_t end)
 {
@@ -55,22 +60,27 @@ void lzo_compress(char* input_path, char* output_path)
     file_buf_t* dst = file_buf_t_init(src->size_buf);
     uint8_t *wrkmem = malloc(LZO1X_MEM_COMPRESS * sizeof(uint8_t));
     int lzo1x_1_status = lzo1x_1_compress(src->buf, src->size_buf, dst->buf, &(dst->size_buf), (void*)(wrkmem));
-    printf("@ Compression status: %d\n", lzo1x_1_status);
+    verbose("@ Compression status: %d\n", lzo1x_1_status);
     file_buf_write_file(output_path, dst);
     // Write size buf
+    char* size_file_tag = strdup(DEFAULT_SIZE_FILE_TAG);
+    char* size_file_format = strdup(DEFAULT_SIZE_FILE_FORMAT);
+    char* path_size_output = get_tag_file_name(output_path, size_file_tag, size_file_format, DEFAULT_SEPARATOR);
+    verbose("Size file output path: %s\n", path_size_output);
     char* tmp_size = (char*)malloc(sizeof(char) * DEFAULT_SIZE_BUFFER);
     itoa(src->size_buf, tmp_size);
-    //printf("string %s\n", tmp_size);
     file_buf_t* tmp = file_buf_t_init(strlen(tmp_size));
     tmp->buf = (uint8_t*)strdup(tmp_size);
-    char* folder = get_folder(output_path);
-    char* full_output_size_path = get_full_path(DEFAULT_SRC_SIZE_FILE, folder);
-    file_buf_write_file(full_output_size_path, tmp);
+    file_buf_write_file(path_size_output, tmp);
     // Free memory
     free(wrkmem);
     file_buf_free(src);
     file_buf_free(dst);
     file_buf_free(tmp);
+    free(size_file_tag);
+    free(size_file_format);
+    free(path_size_output);
+    free(tmp_size);
 }
 
 void lzo_decompress(char* input_path, char* output_path)
@@ -78,18 +88,22 @@ void lzo_decompress(char* input_path, char* output_path)
 
     file_buf_t* src = file_buf_read_file(input_path);
     //Find file and read size of source (not compressed file)
-    char* folder = get_folder(input_path);
-    char* full_input_size_path = get_full_path(DEFAULT_SRC_SIZE_FILE, folder);
-    file_buf_t* src_size = file_buf_read_file(full_input_size_path);
+    char* size_file_tag = strdup(DEFAULT_SIZE_FILE_TAG);
+    char* size_file_format = strdup(DEFAULT_SIZE_FILE_FORMAT);
+    char* path_size_input = get_tag_file_name(input_path, size_file_tag, size_file_format, DEFAULT_SEPARATOR);
+    file_buf_t* src_size = file_buf_read_file(path_size_input);
     size_t tmp_req = atoi((char*)src_size->buf);
     file_buf_t* dst = file_buf_t_init(tmp_req);
     int lzo1x_1_dec_status = lzo1x_decompress_safe(src->buf, src->size_buf, dst->buf, &(dst->size_buf));
-    printf("@ Decompression status: %d\n", lzo1x_1_dec_status);
+    verbose("@ Decompression status: %d\n", lzo1x_1_dec_status);
     file_buf_write_file(output_path, dst);
     // Free memory
     file_buf_free(src);
     file_buf_free(src_size);
     file_buf_free(dst);
+    free(size_file_format);
+    free(size_file_tag);
+    free(path_size_input);
 }
 
 void lzo_test(char* input_path, char* output_path)
@@ -108,7 +122,7 @@ void lzo_test(char* input_path, char* output_path)
     double time_spent_compressing = get_time_in_seconds(begin_compress, end_compress);
     double time_spent_decompressing = get_time_in_seconds(begin_decompress, end_decompress);
     int differences = cmp_files(input_path, output_path);
-    printf(
+    verbose(
     "@ Done!\n"
     "Time used for compress: %fs\n"
     "Time used for decompress: %fs\nTotal: %fs\n" 
@@ -117,10 +131,10 @@ void lzo_test(char* input_path, char* output_path)
     );
 }
 
-
 int main(int argc, char *argv[])
 {
     prs_args_t *init_obj = parse_args(argc, argv);
+    setVerbose(init_obj->verbose);
     if(init_obj->input_file == NULL) {
         init_obj->input_file = strdup(DEFAULT_INPUT_FILE);
     }
@@ -132,7 +146,7 @@ int main(int argc, char *argv[])
             init_obj->output_file = get_full_path(DEFAULT_DECOMP_OUT, folder);
         }
     }
-    printf("init\nsource %s\nout %s\nstatus %d\n", init_obj->input_file, init_obj->output_file, init_obj->status);
+    verbose("INIT\nSource: %s\nOut: %s\nStatus: %d\n", init_obj->input_file, init_obj->output_file, init_obj->status);
     int status_prog = 0;
     switch (init_obj->status)
     {

@@ -46,6 +46,40 @@ char* get_full_path(char* file, char* folder)
     return full_path;
 }
 
+// test_folder/abc.txt + _d -> test_folder/abc_d.txt
+char* get_tag_file_name(char* pathname, char* tag, char* format_file, char separate_char)
+{
+    size_t nf_size = strlen(pathname) + strlen(tag) + 1;
+    char* nf = (char*)malloc(sizeof(char) * (nf_size));
+    char* ps = nf;
+    char* pp = pathname;
+    char* pt = tag;
+    char* ppoint = pp;
+    char* pf = format_file;
+    for(size_t i = 0; i < strlen(pathname); i++) {
+        if(pathname[i] == separate_char) {
+            ppoint = pathname + i;
+        }
+    }
+    if(*ppoint != separate_char) {
+        ppoint = pathname + strlen(pathname) - 1;
+    } 
+    while(pp != ppoint) {
+        *(ps++) = *(pp++);
+    }
+    while(*pt != '\0') {
+        *(ps++) = *(pt++);
+    }
+    if(*ppoint == '.') 
+    {   *(ps++) = *ppoint; 
+        while(*pf != '\0') {
+            *(ps++) = *(pf++);
+        }
+    }
+    *(ps) = '\0';
+    return nf;
+}
+
 
 void fd_check(FILE* fd)
 {

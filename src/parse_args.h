@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define ERRR_STATUS -1
 #define HELP_STATUS 0
@@ -17,6 +18,7 @@ typedef struct {
     char* input_file;
     char* output_file;
     int status;
+    bool verbose;
 } prs_args_t;
 
 void show_help();
