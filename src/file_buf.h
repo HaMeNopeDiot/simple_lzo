@@ -12,6 +12,40 @@ typedef struct {
    size_t size_buf; 
 } file_buf_t;
 
+char* get_folder(char* full_path)
+{
+    char* folder_tmp = strdup(full_path);
+    char* p_slash = folder_tmp;
+    for(size_t i = 0; i < strlen(folder_tmp); i++) {
+        if(folder_tmp[i] == '/') 
+            p_slash = folder_tmp + i + 1;
+    }
+    size_t len_folder_string = p_slash - folder_tmp + 1;
+    char* folder = (char*)malloc(sizeof(char) * (len_folder_string));
+    for(size_t i = 0; i < len_folder_string - 1; i++) {
+        folder[i] = folder_tmp[i];
+    }
+    folder[len_folder_string - 1] = '\0';
+    free(folder_tmp);
+    return folder;
+}
+
+char* get_full_path(char* file, char* folder)
+{
+    char* full_path = (char*)malloc(sizeof(char) * (strlen(file) + strlen(folder) + 1));
+    char* ptr_o = full_path;
+    char* ptr_i = folder;
+    while(ptr_i != folder + strlen(folder)) {
+        *(ptr_o++) = *(ptr_i++);
+    }
+    ptr_i = file;
+    while(ptr_i != file + strlen(file)) {
+        *(ptr_o++) = *(ptr_i++);
+    }
+    *(ptr_o) = '\0';
+    return full_path;
+}
+
 
 void fd_check(FILE* fd)
 {
@@ -109,6 +143,41 @@ void file_buf_printf_check(file_buf_t *obj, char* name_obj)
     printf("%s with size: %lu\n", name_obj, obj->size_buf);
     file_buf_printf(obj);
     printf("\n");
+}
+
+size_t read_remain(FILE* file)
+{
+    size_t length = 0;
+    while(!feof(file)) { // ANY FILE WILL BE HERE AT ONCE!
+        fgetc(file);
+        length++;
+    }
+    return length - 1;
+}
+
+
+int cmp_files(char* path_file_a, char* path_file_b)
+{
+    int differences = 0;
+    FILE *fd_a = fopen(path_file_a, "rb");
+    fd_check(fd_a);
+    FILE *fd_b = fopen(path_file_b, "rb");
+    fd_check(fd_b);
+    char a,b;
+    while(!feof(fd_a) && !feof(fd_b)) {
+        a = fgetc(fd_a);
+        b = fgetc(fd_b);
+        differences += a == b? 0 : 1;
+    }
+    if(!feof(fd_a)) {
+        differences += read_remain(fd_a);
+    }
+    if(!feof(fd_b)) {
+        differences += read_remain(fd_b);
+    }
+    fclose(fd_a);
+    fclose(fd_b);
+    return differences;
 }
 
 
