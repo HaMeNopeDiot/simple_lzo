@@ -122,7 +122,10 @@ file_buf_t* file_buf_t_init(size_t size_buf)
 
 void file_buf_free(file_buf_t* obj)
 {
-    free(obj->buf);
+    //printf("size: %ld/%ld\n", strlen((char*)obj->buf), obj->size_buf);
+    if(obj->buf != NULL) {
+        free(obj->buf);
+    }
     free(obj);
 }
 

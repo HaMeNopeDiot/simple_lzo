@@ -11,7 +11,7 @@
 
 
 #define DEFAULT_INPUT_FILE "text.txt"
-#define DEFAULT_COMP_OUT "text_c.lzo"
+#define DEFAULT_COMP_OUT "temporary_c.lzo"
 #define DEFAULT_DECOMP_OUT "text_d.txt"
 #define DEFAULT_SRC_SIZE_FILE "src_size.txt"
 
@@ -57,9 +57,12 @@ double get_time_in_seconds(clock_t begin, clock_t end)
 void lzo_compress(char* input_path, char* output_path)
 {
     file_buf_t* src = file_buf_read_file(input_path);
+    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     file_buf_t* dst = file_buf_t_init(src->size_buf);
     uint8_t *wrkmem = malloc(LZO1X_MEM_COMPRESS * sizeof(uint8_t));
+    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     int lzo1x_1_status = lzo1x_1_compress(src->buf, src->size_buf, dst->buf, &(dst->size_buf), (void*)(wrkmem));
+    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     verbose("@ Compression status: %d\n", lzo1x_1_status);
     file_buf_write_file(output_path, dst);
     // Write size buf
@@ -67,13 +70,22 @@ void lzo_compress(char* input_path, char* output_path)
     char* size_file_format = strdup(DEFAULT_SIZE_FILE_FORMAT);
     char* path_size_output = get_tag_file_name(output_path, size_file_tag, size_file_format, DEFAULT_SEPARATOR);
     verbose("Size file output path: %s\n", path_size_output);
+    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     char* tmp_size = (char*)malloc(sizeof(char) * DEFAULT_SIZE_BUFFER);
+    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     itoa(src->size_buf, tmp_size);
+    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     file_buf_t* tmp = file_buf_t_init(strlen(tmp_size));
+    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     tmp->buf = (uint8_t*)strdup(tmp_size);
+    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     file_buf_write_file(path_size_output, tmp);
+    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     // Free memory
+    printf("a\n");
     free(wrkmem);
+    printf("a\n");
+    //file_buf_printf_check(src, "src");
     file_buf_free(src);
     file_buf_free(dst);
     file_buf_free(tmp);
