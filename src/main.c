@@ -36,33 +36,25 @@ double get_time_in_seconds(clock_t begin, clock_t end)
          s[j] = c;
      }
  }
-
- /* itoa:  конвертируем n в символы в s */
- void itoa(int n, char *s)
- {
-     int i, sign;
  
-     if ((sign = n) < 0)  /* записываем знак */
-         n = -n;          /* делаем n положительным числом */
-     i = 0;
-     do {       /* генерируем цифры в обратном порядке */
-         s[i++] = n % 10 + '0';   /* берем следующую цифру */
-     } while ((n /= 10) > 0);     /* удаляем */
-     if (sign < 0)
-         s[i++] = '-';
-     s[i] = '\0';
-     reverse(s);
+ char* int_to_text(int num) {
+    int tmp = num;
+    int size_num = 0;
+    while(tmp != 0) {
+        tmp /= 10;
+        size_num++;
+    }
+    char* text_num = (char*)malloc(sizeof(char) * size_num);
+    sprintf(text_num, "%d", num);
+    return text_num;
  }
 
 void lzo_compress(char* input_path, char* output_path)
 {
     file_buf_t* src = file_buf_read_file(input_path);
-    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     file_buf_t* dst = file_buf_t_init(src->size_buf);
     uint8_t *wrkmem = malloc(LZO1X_MEM_COMPRESS * sizeof(uint8_t));
-    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     int lzo1x_1_status = lzo1x_1_compress(src->buf, src->size_buf, dst->buf, &(dst->size_buf), (void*)(wrkmem));
-    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     verbose("@ Compression status: %d\n", lzo1x_1_status);
     file_buf_write_file(output_path, dst);
     // Write size buf
@@ -70,17 +62,11 @@ void lzo_compress(char* input_path, char* output_path)
     char* size_file_format = strdup(DEFAULT_SIZE_FILE_FORMAT);
     char* path_size_output = get_tag_file_name(output_path, size_file_tag, size_file_format, DEFAULT_SEPARATOR);
     verbose("Size file output path: %s\n", path_size_output);
-    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     char* tmp_size = (char*)malloc(sizeof(char) * DEFAULT_SIZE_BUFFER);
-    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
-    itoa(src->size_buf, tmp_size);
-    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
+    tmp_size = int_to_text(src->size_buf);
     file_buf_t* tmp = file_buf_t_init(strlen(tmp_size));
-    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     tmp->buf = (uint8_t*)strdup(tmp_size);
-    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     file_buf_write_file(path_size_output, tmp);
-    printf("size: %ld/%ld\n", strlen((char*)src->buf), src->size_buf);
     // Free memory
     printf("a\n");
     free(wrkmem);
