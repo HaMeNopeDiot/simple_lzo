@@ -7,9 +7,6 @@
 #include "lzo.h"
 #include "align.h"
 
-//#define __LITTLE_ENDIAN 1234
-#define __BIG_ENDIAN 4321
-
 static size_t lzo1x_1_do_compress(const unsigned char *in, size_t in_len,
 		    unsigned char *out, size_t *out_len,
 		    size_t ti, void *wrkmem, signed char *state_offset,
@@ -254,7 +251,6 @@ static int lzogeneric1x_1_compress(const unsigned char *in, size_t in_len,
 		l  -= ll; // remaining lenght
 	}
 	t += l;
-
 	if (t > 0) {
 		const unsigned char *ii = in + in_len - t;
 

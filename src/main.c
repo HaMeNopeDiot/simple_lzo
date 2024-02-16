@@ -19,23 +19,12 @@
 #define DEFAULT_SIZE_FILE_FORMAT "txt"
 #define DEFAULT_SEPARATOR '.'
 
+#define DEFAULT_OUT_OVERWRITE_BUFFER ((16) * ((src->size_buf) % (1024)))
+
 double get_time_in_seconds(clock_t begin, clock_t end)
 {
     return (double)(end - begin) / CLOCKS_PER_SEC;
 }
- 
- /* reverse:  переворачиваем строку s на месте */
- void reverse(char s[])
- {
-     int i, j;
-     char c;
- 
-     for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
-         c = s[i];
-         s[i] = s[j];
-         s[j] = c;
-     }
- }
  
  char* int_to_text(int num) {
     int tmp = num;
@@ -44,7 +33,7 @@ double get_time_in_seconds(clock_t begin, clock_t end)
         tmp /= 10;
         size_num++;
     }
-    char* text_num = (char*)malloc(sizeof(char) * size_num);
+    char* text_num = (char*)malloc(sizeof(char) * size_num + 1);
     sprintf(text_num, "%d", num);
     return text_num;
  }
@@ -52,8 +41,8 @@ double get_time_in_seconds(clock_t begin, clock_t end)
 void lzo_compress(char* input_path, char* output_path)
 {
     file_buf_t* src = file_buf_read_file(input_path);
-    file_buf_t* dst = file_buf_t_init(src->size_buf);
-    uint8_t *wrkmem = malloc(LZO1X_MEM_COMPRESS * sizeof(uint8_t));
+    file_buf_t* dst = file_buf_t_init(src->size_buf + DEFAULT_OUT_OVERWRITE_BUFFER);     //Size of dst can be more than src. That's why code allocate memory for dst more than src.
+    uint8_t *wrkmem = calloc(LZO1X_MEM_COMPRESS, sizeof(uint8_t));
     int lzo1x_1_status = lzo1x_1_compress(src->buf, src->size_buf, dst->buf, &(dst->size_buf), (void*)(wrkmem));
     verbose("@ Compression status: %d\n", lzo1x_1_status);
     file_buf_write_file(output_path, dst);
@@ -64,14 +53,10 @@ void lzo_compress(char* input_path, char* output_path)
     verbose("Size file output path: %s\n", path_size_output);
     char* tmp_size = (char*)malloc(sizeof(char) * DEFAULT_SIZE_BUFFER);
     tmp_size = int_to_text(src->size_buf);
-    file_buf_t* tmp = file_buf_t_init(strlen(tmp_size));
-    tmp->buf = (uint8_t*)strdup(tmp_size);
+    file_buf_t* tmp = init_file_buf_t((uint8_t*)strdup(tmp_size), strlen(tmp_size));
     file_buf_write_file(path_size_output, tmp);
     // Free memory
-    printf("a\n");
     free(wrkmem);
-    printf("a\n");
-    //file_buf_printf_check(src, "src");
     file_buf_free(src);
     file_buf_free(dst);
     file_buf_free(tmp);
@@ -127,6 +112,8 @@ void lzo_test(char* input_path, char* output_path)
     "Differences in files: %d counts\n",
     time_spent_compressing, time_spent_decompressing, time_spent_compressing + time_spent_decompressing, differences
     );
+    free(folder);
+    free(path_tmp);
 }
 
 int main(int argc, char *argv[])
@@ -143,6 +130,7 @@ int main(int argc, char *argv[])
         } else {
             init_obj->output_file = get_full_path(DEFAULT_DECOMP_OUT, folder);
         }
+        free(folder);
     }
     verbose("INIT\nSource: %s\nOut: %s\nStatus: %d\n", init_obj->input_file, init_obj->output_file, init_obj->status);
     int status_prog = 0;

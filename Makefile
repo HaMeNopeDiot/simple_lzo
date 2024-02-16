@@ -18,7 +18,7 @@ OBJ_DIR_EX := $(shell mkdir -p $(OBJ_DIR) && echo $(OBJ_DIR))
 all: $(BASE)
 
 $(BASE): .depend $(OBJECTS)
-	$(CC) $(filter-out .depend,$^) -O0 -g -o "$@"
+	$(CC) $(filter-out .depend,$^) -Og -g -o "$@"
 
 .depend: $(SOURCES)
 	rm -f "$@"

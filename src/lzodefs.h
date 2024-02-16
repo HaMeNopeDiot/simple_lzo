@@ -18,7 +18,12 @@
  * 1: lzo with support for RLE
  */
 #define LZO_VERSION 1
+#include <string.h>
 
+#define COPY4(dst, src) memcpy(dst, src, 4)
+#define COPY8(dst, src) memcpy(dst, src, 8)
+
+/*
 #define COPY4(dst, src)	\
 		put_unaligned(get_unaligned((const u32 *)(src)), (u32 *)(dst))
 #if defined(CONFIG_X86_64) || defined(CONFIG_ARM64)
@@ -28,6 +33,7 @@
 #define COPY8(dst, src)	\
 		COPY4(dst, src); COPY4((dst) + 4, (src) + 4)
 #endif
+*/
 
 /*
 #if defined(__BIG_ENDIAN) && defined(__LITTLE_ENDIAN)
@@ -67,7 +73,7 @@
 #define MIN_ZERO_RUN_LENGTH	4
 #define MAX_ZERO_RUN_LENGTH	(2047 + MIN_ZERO_RUN_LENGTH)
 
-#define lzo_dict_t      unsigned short
+#define lzo_dict_t      uint16_t
 #define D_BITS		13
 #define D_SIZE		(1u << D_BITS)
 #define D_MASK		(D_SIZE - 1)

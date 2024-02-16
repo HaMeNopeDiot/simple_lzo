@@ -115,17 +115,16 @@ file_buf_t* init_file_buf_t(uint8_t* buf, size_t size_buf)
 file_buf_t* file_buf_t_init(size_t size_buf)
 {
     file_buf_t *fbt = (file_buf_t*)malloc(sizeof(file_buf_t));
-    fbt->buf = malloc(sizeof(uint8_t) * size_buf);
+    fbt->buf = calloc(size_buf, sizeof(uint8_t));
     fbt->size_buf = size_buf;
     return fbt;
 }
 
+
 void file_buf_free(file_buf_t* obj)
 {
     //printf("size: %ld/%ld\n", strlen((char*)obj->buf), obj->size_buf);
-    if(obj->buf != NULL) {
-        free(obj->buf);
-    }
+    free(obj->buf);
     free(obj);
 }
 
@@ -157,9 +156,9 @@ file_buf_t* file_buf_read_file(char* file_path)
         }
     }
     buf[i] = '\0';
-    //printf("buf: %s\n", buf);
+    //printf("buf: %ld\n", i);
     fclose(fd);
-    return init_file_buf_t(buf, i - 1);
+    return init_file_buf_t(buf, i);
 }
 
 void file_buf_write_file(char* dst_path, file_buf_t* dst)

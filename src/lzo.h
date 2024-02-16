@@ -34,7 +34,7 @@
 #define likely(x) (x)
 #define unlikely(x) (x)
 
-#define LZO1X_1_MEM_COMPRESS	(8192 * sizeof(unsigned short))
+#define LZO1X_1_MEM_COMPRESS	(8192 * sizeof(uint16_t))
 #define LZO1X_MEM_COMPRESS	LZO1X_1_MEM_COMPRESS
 
 #define lzo1x_worst_compress(x) ((x) + ((x) / 16) + 64 + 3 + 2)
