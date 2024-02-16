@@ -1,13 +1,6 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include "lzo1x_compress.h"
 
-#include "lzodefs.h"
-#include "types.h"
-#include "libfdt_env.h"
-#include "lzo.h"
-#include "align.h"
-
-static size_t lzo1x_1_do_compress(const unsigned char *in, size_t in_len,
+size_t lzo1x_1_do_compress(const unsigned char *in, size_t in_len,
 		    unsigned char *out, size_t *out_len,
 		    size_t ti, void *wrkmem, signed char *state_offset,
 		    const unsigned char bitstream_version)
@@ -213,7 +206,7 @@ finished_writing_instruction:
 	return in_end - (ii - ti);
 }
 
-static int lzogeneric1x_1_compress(const unsigned char *in, size_t in_len,
+int lzogeneric1x_1_compress(const unsigned char *in, size_t in_len,
 		     unsigned char *out, size_t *out_len,
 		     void *wrkmem, const unsigned char bitstream_version)
 {

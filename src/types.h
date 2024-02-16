@@ -37,7 +37,7 @@ typedef s32 int32_t;
 #define min_t(type, a, b) min(((type) a), ((type) b))
 #define max_t(type, a, b) max(((type) a), ((type) b))
 
-typedef int bool;
+//typedef int bool;
 
 #ifndef true
 #define true 1
