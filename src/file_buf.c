@@ -69,10 +69,10 @@ char* get_tag_file_name(char* pathname, char* tag, char* format_file, char separ
 }
 
 
-void fd_check(FILE* fd)
+void fd_check(FILE* fd, char* path)
 {
     if(fd == NULL) {
-        printf("Incorrect path/name file!\n");
+        printf("Incorrect path: %s\n", path);
         exit(1);
     }
 } 
@@ -126,7 +126,7 @@ void file_buf_printf(file_buf_t* obj)
 file_buf_t* file_buf_read_file(char* file_path)
 {
     FILE* fd = fopen(file_path, "rb");
-    fd_check(fd);
+    fd_check(fd, file_path);
     uint8_t *buf = (uint8_t*)malloc((DEFAULT_SIZE_BUFFER) * sizeof(uint8_t));
     size_t buf_sz = DEFAULT_SIZE_BUFFER;
     size_t i = 0;
@@ -150,7 +150,7 @@ file_buf_t* file_buf_read_file(char* file_path)
 void file_buf_write_file(char* dst_path, file_buf_t* dst)
 {
     FILE *fd = fopen(dst_path, "wb");
-    fd_check(fd);
+    fd_check(fd, dst_path);
     size_t i;
     char c_tmp;
     for(i = 0; i < dst->size_buf; i++)  {
@@ -182,9 +182,9 @@ int cmp_files(char* path_file_a, char* path_file_b)
 {
     int differences = 0;
     FILE *fd_a = fopen(path_file_a, "rb");
-    fd_check(fd_a);
+    fd_check(fd_a, path_file_a);
     FILE *fd_b = fopen(path_file_b, "rb");
-    fd_check(fd_b);
+    fd_check(fd_b, path_file_b);
     char a,b;
     while(!feof(fd_a) && !feof(fd_b)) {
         a = fgetc(fd_a);

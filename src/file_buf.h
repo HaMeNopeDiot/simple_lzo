@@ -17,7 +17,7 @@ typedef struct {
 char* get_folder(char* full_path);
 char* get_full_path(char* file, char* folder);
 char* get_tag_file_name(char* pathname, char* tag, char* format_file, char separate_char);
-void fd_check(FILE* fd);
+void fd_check(FILE* fd, char* path);
 int32_t file_buf_compare(file_buf_t first, file_buf_t second);
 file_buf_t* file_buf_init(uint8_t* buf, size_t size_buf);
 file_buf_t* file_buf_init_osize(size_t size_buf);
