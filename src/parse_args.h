@@ -19,6 +19,7 @@ typedef struct {
     char* output_file;
     int status;
     bool verbose;
+    int btstrm_ver;
 } prs_args_t;
 
 void show_help();

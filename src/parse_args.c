@@ -10,6 +10,7 @@ void show_help()
         "   -i            input file\n"
         "   -o            output file\n"
         "   -v            verbose\n"
+        "   -b            bitstream\n"
     );
 }
 
@@ -20,6 +21,7 @@ prs_args_t* prs_args_init()
     obj->verbose = false;
     obj->input_file = NULL;
     obj->output_file = NULL;
+    obj->btstrm_ver = 0;
     return obj;
 }
 
@@ -38,7 +40,7 @@ prs_args_t* parse_args(int argc, char *argv[])
 {
     int result_opt = 0;
     prs_args_t* result = prs_args_init();
-    while((result_opt = getopt(argc, argv, "htdi:o:v")) != -1)
+    while((result_opt = getopt(argc, argv, "bhtdi:o:v")) != -1)
     {
         switch(result_opt) {
             case 'h': 
@@ -61,6 +63,9 @@ prs_args_t* parse_args(int argc, char *argv[])
             case 'v':
                 result->verbose = true;
             break; // verbose
+            case 'b':
+                result->btstrm_ver = 1;
+            break;
             default:
                 result->status = ERRR_STATUS;
                 return result;

@@ -31,13 +31,13 @@ int main(int argc, char *argv[])
         status_prog = lzo_decompress(init_obj->input_file, init_obj->output_file);
         break;
     case COMP_STATUS:
-        status_prog = lzo_compress(init_obj->input_file, init_obj->output_file);
+        status_prog = lzo_compress(init_obj->input_file, init_obj->output_file, init_obj->btstrm_ver);
         break;
     case TEST_STATUS:
-        status_prog = lzo_test(init_obj->input_file, init_obj->output_file);
+        status_prog = lzo_test(init_obj->input_file, init_obj->output_file, init_obj->btstrm_ver);
         break;
     default:
-        status_prog = 1;
+        status_prog = LZO_VERSION;
         break;
     }
     prs_args_free(init_obj);

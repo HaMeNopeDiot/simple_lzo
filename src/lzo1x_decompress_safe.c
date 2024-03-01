@@ -48,13 +48,13 @@ int lzo1x_decompress_safe(const unsigned char *in, size_t in_len,
 						ip++; // skip null bytes
 						NEED_IP(1);
 					}
-					offset = ip - ip_last; // Usually zero, because in text files \ 
+					offset = ip - ip_last; // Usually zero, because in text files 
 					// Distance between instructions is lower than 255.
 					if (unlikely(offset > MAX_255_COUNT))
 						return LZO_E_ERROR;
 
-					offset = (offset << 8) - offset; /* This is offset for getting bigger \ 
-					values of distance between instructions. Even if offset is 1, distance \ 
+					offset = (offset << 8) - offset; /* This is offset for getting bigger 
+					values of distance between instructions. Even if offset is 1, distance 
 					between instructions will be increased to 255 */
 					t += offset + 15 + *ip++; // t is a nearest next instruction
 				}
@@ -98,8 +98,8 @@ copy_literal_run:
 		} else if (t >= 32) {
 			t = (t & 31) + (3 - 1); // t & 31 is just a mask of 0 0 1 L L L L L, where added +2
 			// this is just a formula 2 + L, from lzo.txt.
-			if (unlikely(t == 2)) { /* if  L equal zero, then L is more than 31 \
-				AND, we need to count offset, that will be count zero bytes and use it to \
+			if (unlikely(t == 2)) { /* if  L equal zero, then L is more than 31 
+				AND, we need to count offset, that will be count zero bytes and use it to 
 				count real L. */
 				size_t offset;
 				const unsigned char *ip_last = ip;
@@ -112,9 +112,9 @@ copy_literal_run:
 				if (unlikely(offset > MAX_255_COUNT))
 					return LZO_E_ERROR;
 
-				offset = (offset << 8) - offset; // count a offset. Remember, that if \ 
+				offset = (offset << 8) - offset; // count a offset. Remember, that if 
 				// offset is 1, then offset be equal 255.
-				t += offset + 31 + *ip++;  // if t is 2, and we have 31, we can additional count \ 
+				t += offset + 31 + *ip++;  // if t is 2, and we have 31, we can additional count
 				// from *ip up to 255 value.
 				NEED_IP(2);
 			}
@@ -125,7 +125,7 @@ copy_literal_run:
 			next &= 3; // set state
 		} else { // if t < 32 or simple language in range 16..31
 			NEED_IP(2);
-			next = get_unaligned_le16(ip); /* read LE16 2 bytes in format \ 
+			next = get_unaligned_le16(ip); /* read LE16 2 bytes in format 
 			D D D D D D D D : D D D D D D S S */
 			if (((next & 0xfffc) == 0xfffc) && //if all D is maximum,
 			    ((t & 0xf8) == 0x18) && // and H is 1
@@ -139,7 +139,7 @@ copy_literal_run:
 				memset(op, 0, t);
 				op += t; // 
 				next &= 3; //set state to mask 3 (state can be between 0 and 2)
-				ip += 3; /* jump forward to 3. (ip[0] and ip [1] used for le16) \
+				ip += 3; /* jump forward to 3. (ip[0] and ip [1] used for le16) 
 				ip[2] used for X */
 				goto match_next;
 			} else {
