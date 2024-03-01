@@ -1,6 +1,8 @@
 #include "lzo1x_compress.h"
 
-#define __BIG_ENDIAN 1234
+#ifndef __BIG_ENDIAN
+	#define __BIG_ENDIAN 1234
+#endif /* __BIG_ENDIAN */
 
 size_t lzo1x_1_do_compress(const unsigned char *in, size_t in_len,
 		    unsigned char *out, size_t *out_len,

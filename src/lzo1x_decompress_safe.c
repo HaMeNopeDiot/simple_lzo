@@ -6,11 +6,11 @@ int lzo1x_decompress_safe(const unsigned char *in, size_t in_len,
 	
 	unsigned char *op; // Pointer from out
 	const unsigned char *ip; // Pointer from in
-	size_t t, next;
-	size_t state = 0;
+	size_t t, next; // t - either distance to next instruction or first byte of instruction
+	size_t state = 0; // Posssible values: 0, 1, 2, 3, 4
 	const unsigned char *m_pos;
-	const unsigned char * const ip_end = in + in_len;
-	unsigned char * const op_end = out + *out_len;
+	const unsigned char * const ip_end = in + in_len; // Pointer to the end of input data stream (not changed during decompression)
+	unsigned char * const op_end = out + *out_len; // Pointer to the end of output data stream (not changed during decompression)
 
 	unsigned char bitstream_version;
 

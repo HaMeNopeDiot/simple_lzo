@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
         status_prog = lzo_test(init_obj->input_file, init_obj->output_file, init_obj->btstrm_ver);
         break;
     default:
-        status_prog = LZO_VERSION;
+        status_prog = 0;
         break;
     }
     prs_args_free(init_obj);
