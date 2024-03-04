@@ -47,7 +47,7 @@ char* lzo_gpathsize(char* output_path)
 int lzo_compress(char* input_path, char* output_path, int lzo_ver)
 {
     file_buf_t* src = file_buf_read_file(input_path);
-    file_buf_t* dst = file_buf_init_osize(src->size_buf + DEFAULT_OUT_OVERWRITE_BUFFER);     //Size of dst can be more than src. That's why code allocate memory for dst more than src.
+    file_buf_t* dst = file_buf_init_osize(src->size_buf + DEFAULT_OUT_OVERWRITE_BUFFER + 10);     //Size of dst can be more than src. That's why code allocate memory for dst more than src.
     uint8_t *wrkmem = calloc(LZO1X_MEM_COMPRESS, sizeof(uint8_t));
     int lzo1x_1_status = lzo_compress_switch(src, dst, (void*)(wrkmem), lzo_ver);
     verbose("@ Compression status: %d\n", lzo1x_1_status);

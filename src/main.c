@@ -6,8 +6,7 @@
 
 bool Verbose = false;
 
-
-int main(int argc, char *argv[])
+int simple_lzo(int argc, char* argv[])
 {
     prs_args_t *init_obj = parse_args(argc, argv);
     setVerbose(init_obj->verbose);
@@ -42,4 +41,24 @@ int main(int argc, char *argv[])
     }
     prs_args_free(init_obj);
     return status_prog;
+}
+
+void test()
+{
+    //return simple_lzo(argc, argv);
+    uint8_t* input_data = (uint8_t*)malloc(sizeof(uint8_t) * 5);
+    input_data[0] = 0x6C;
+    input_data[1] = 0x01;
+    input_data[2] = 0x00;
+    input_data[3] = 0x10;
+    input_data[4] = 0x45;
+    lzo1x_dins_t res = decode_instr2b(input_data);
+    lzo1x_dins_print(res);
+    free(input_data);
+}
+
+int main(int argc, char *argv[])
+{
+    test();
+    return 0; //simple_lzo(argc, argv);
 }
