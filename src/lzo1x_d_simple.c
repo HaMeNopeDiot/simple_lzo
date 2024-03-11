@@ -1,5 +1,20 @@
 #include "lzo1x_d_simple.h"
 
+lzo1x_begin_t decode_first_inst(const uint8_t* ip) // still don't work on not null bitstream
+{
+    lzo1x_begin_t instruction;
+    instruction.bitstream_version = *ip;
+    instruction.dist_value = *(ip+1);
+    return instruction;
+}
+
+void j_inst(uint8_t* input, uint8_t* output, size_t distance) 
+{
+    while(distance--) {
+        *output++ = *input++;
+    }
+}
+
 lzo1x_ins_fb_t decode_first_byte_4(uint8_t byte) 
 {
     lzo1x_ins_fb_t result;

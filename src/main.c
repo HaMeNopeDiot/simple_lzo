@@ -57,8 +57,29 @@ void test()
     free(input_data);
 }
 
+void test2()
+{
+    uint8_t* input_data = (uint8_t*)strdup("00what a awesome day today! Let's go walk in park!");
+    //input_data[0] = (char)0x00;
+    //input_data[1] = (char)0x10;
+    *input_data = 0x00;
+    *(input_data+1) = 0x10;
+    printf("text: %s\n", (char*)input_data);
+    lzo1x_begin_t beg_data = decode_first_inst(input_data);
+    uint8_t* output_data = (uint8_t*)malloc(sizeof(uint8_t) * 32);
+    
+    uint8_t* op = output_data;
+    uint8_t* ip = input_data;
+
+    j_inst(ip, op, beg_data.dist_value);
+
+    printf("text: %s\n", (char*)output_data);
+    free(output_data);
+    free(input_data);
+}
+
 int main(int argc, char *argv[])
 {
-    test();
+    test2();
     return 0; //simple_lzo(argc, argv);
 }

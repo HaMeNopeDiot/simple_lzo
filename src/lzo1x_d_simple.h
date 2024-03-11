@@ -36,6 +36,8 @@ typedef struct {
     uint8_t h;
 } lzo1x_ins_fb_t;
 
+lzo1x_begin_t decode_first_inst(const uint8_t* ip);
+
 lzo1x_ins_fb_t decode_first_byte_3(uint8_t byte);
 lzo1x_ins_fb_t decode_first_byte_2(uint8_t byte);
 lzo1x_ins_fb_t decode_first_byte_1(uint8_t byte);
@@ -49,5 +51,6 @@ lzo1x_dins_t decode_instr1b(uint8_t* instruction);
 void lzo1x_2bins_print(const lzo1x_ins_fb_t obj);
 void lzo1x_dins_print(const lzo1x_dins_t obj);
 
+void j_inst(uint8_t* input, uint8_t* output, size_t distance);
 
 #endif /* LZO1X_D_SIMPLE_H */
