@@ -1,6 +1,7 @@
 #include "lzo1x_d_simple.h"
 
 /* NEW FUNCTIONS */
+
 uint8_t lzo1x_get_type_instruction(lzo1x_fb_t first_b)
 {
     uint8_t type_of_instruction;

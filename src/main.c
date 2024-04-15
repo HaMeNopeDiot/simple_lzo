@@ -122,6 +122,6 @@ void test3()
 
 int main(int argc, char *argv[])
 {
-    test3();
-    return 0; //simple_lzo(argc, argv);
+    //test3();
+    return simple_lzo(argc, argv);
 }
