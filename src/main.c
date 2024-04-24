@@ -108,20 +108,20 @@ void test3()
     ii_4[0] = 0x78;
     ii_4[1] = 0x39;
 
-    lzo1x_decode_instruction(ii_1);
-    lzo1x_decode_instruction(ii_2);
-    lzo1x_decode_instruction(ii_3);
-    lzo1x_decode_instruction(ii_4);
+    lzo1x_decode_instr(ii_1, 0);
+    lzo1x_decode_instr(ii_2, 0);
+    lzo1x_decode_instr(ii_3, 0);
+    lzo1x_decode_instr(ii_4, 0);
 
     free(ii_1);
     free(ii_2);
     free(ii_3);
     free(ii_4);
-    // lzo1x_decode_instruction
+    // lzo1x_decode_instr
 }
 
 int main(int argc, char *argv[])
 {
-    //test3();
-    return simple_lzo(argc, argv);
+    test3();
+    return 0;//simple_lzo(argc, argv);
 }

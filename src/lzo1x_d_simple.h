@@ -29,8 +29,21 @@ typedef struct {
     uint8_t *dist_n;
 }lzo1x_inst_t;
 
+
+/* 
+    Parameters readed from instruction. Each instruction may contain values like state, lenght, dist, dist_next
+    state. This parameter have two definitions:
+        - 1. Status of current instruction. This need only for some next instructions (from rande [0..15]).
+             Instruction read prevent state of instructions and interprets instructions differently depending
+             on the previous state
+        - 2. Count of copyed instructions from input buffer.
+    length. Count of bytes need to copy from dictinary (output buffer)
+    dist. Distance in bytes, where need to move output pointer to take bytes.
+    dist_next. Distance in bytes to next instruction in input buffer.
+    
+*/
 typedef struct {
-    uint8_t state;
+    uint32_t state;
     uint32_t length;
     uint32_t dist;
     uint32_t dist_next;
@@ -80,43 +93,36 @@ typedef struct {
     unsigned prefix: 4;
 } lzo1x_5b_t;
 
+typedef struct {
+    unsigned l: 4;
+    unsigned prefix: 4;
+} lzo1x_4b0_t;
+
+typedef struct {
+    unsigned s: 2;
+    unsigned d: 2;
+    unsigned prefix: 4;
+} lzo1x_4bs_t;
+
 typedef union
 {
     uint8_t fb;
-    lzo1x_5b_t fb5;
-    lzo1x_6b_t fb6;
-    lzo1x_7b_t fb7;
-    lzo1x_8b_t fb8;
+    // [0..15]
+    lzo1x_4b0_t fb4z; // if state Zero      (Z)
+    lzo1x_4bs_t fb4s; // if state not zero  (S)
+    // [16..255]
+    lzo1x_5b_t fb5; // [16..31]
+    lzo1x_6b_t fb6; // [32..63]
+    lzo1x_7b_t fb7; // [64..127]
+    lzo1x_8b_t fb8; // [128..255]
 }lzo1x_fb_t;
 
 /* END OF FIRST BYTE STRUCTURES */
 
 /* NEW FUNCTIONS */
 
-void lzo1x_decode_instruction(uint8_t *ip);
+void lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state);
 
 
-/* OLD FUNCTIONS */
-
-lzo1x_begin_t decode_first_inst(const uint8_t* ip);
-
-lzo1x_ins_fb_t decode_first_byte_3(uint8_t byte);
-lzo1x_ins_fb_t decode_first_byte_2(uint8_t byte);
-lzo1x_ins_fb_t decode_first_byte_1(uint8_t byte);
-
-uint32_t calc_dist_next_inst(const uint8_t* ip);
-
-lzo1x_dins_t decode_instr3b(uint8_t* instruction);
-lzo1x_dins_t decode_instr2b(uint8_t* instruction);
-lzo1x_dins_t decode_instr1b(uint8_t* instruction);
-
-void lzo1x_2bins_print(const lzo1x_ins_fb_t obj);
-void lzo1x_dins_print(const lzo1x_dins_t obj);
-
-void j_inst(uint8_t* input, uint8_t* output, size_t dist);
-
-
-uint32_t count_zero_bytes_4b(uint8_t *ip);
-uint32_t count_zero_bytes_3b(uint8_t *ip);
 
 #endif /* LZO1X_D_SIMPLE_H */
