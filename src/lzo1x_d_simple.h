@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define LZO1X_FB_8_T 8
 #define LZO1X_FB_7_T 7
@@ -31,22 +32,23 @@ typedef struct {
 
 
 /* 
-    Parameters readed from instruction. Each instruction may contain values like state, lenght, dist, dist_next
-        - 1 state. This parameter have two definitions:
+    Parameters readed from instruction. Each instruction may contain values like instruction, state, lenght, dist, dist_next
+        - 1 type_instr. Type of instruction.
+        - 2 state. This parameter have two definitions:
             - I. Status of current instruction. This need only for some next instructions (from rande [0..15]).
                  Instruction read prevent state of instructions and interprets instructions differently depending
                  on the previous state
             - II. Count of copyed instructions from input buffer.
-        - 2 length. Count of bytes need to copy from dictinary (output buffer)
-        - 3 dist. Distance in bytes, where need to move output pointer to take bytes.
-        - 4 dist_next. Distance in bytes to next instruction in input buffer.
+        - 3 length. Count of bytes need to copy from dictinary (output buffer)
+        - 4 dist. Distance in bytes, where need to move output pointer to take bytes.
     
 */
 typedef struct {
-    uint32_t state;     // state or count of literals need to copy from input buffer
-    uint32_t length;    // count bytes need to copy
-    uint32_t dist;      // range between output buffer and place where need to copy literals
-    uint32_t dist_next; // dist to next instruction
+    uint8_t type_instr;     // Type of instruction
+    uint32_t state;         // state or count of literals need to copy from input buffer
+    uint32_t length;        // count bytes need to copy
+    uint32_t dist;          // range between output buffer and place where need to copy literals
+    uint32_t size_instr;    // size of instruction
 } lzo1x_dins_t;
 
 
@@ -121,8 +123,7 @@ typedef union
 
 /* NEW FUNCTIONS */
 
-void lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state);
-void lzo1x_launch_test_instr(uint8_t **arr_inst, size_t arr_size);
+lzo1x_dins_t lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state);
 
 
 #endif /* LZO1X_D_SIMPLE_H */

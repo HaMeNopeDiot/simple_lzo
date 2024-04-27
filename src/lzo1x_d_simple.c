@@ -49,6 +49,7 @@ lzo1x_dins_t lzo1x_fill_result_8(uint8_t* ip, lzo1x_fb_t first_b)
     result.state = first_b.fb8.s;
     result.length = first_b.fb8.l + 5;
     result.dist = first_b.fb8.d + 1 + (ip[1] << 3);
+    result.size_instr = 2;
     ip += 2;
     return result;
 }
@@ -60,6 +61,7 @@ lzo1x_dins_t lzo1x_fill_result_7(uint8_t* ip, lzo1x_fb_t first_b)
     result.state = first_b.fb7.s;
     result.length = first_b.fb7.l + 3;
     result.dist = first_b.fb7.d + 1 + (ip[1] << 3);
+    result.size_instr = 2;
     ip += 2;
     return result;
 }
@@ -68,10 +70,12 @@ lzo1x_dins_t lzo1x_fill_result_7(uint8_t* ip, lzo1x_fb_t first_b)
 lzo1x_dins_t lzo1x_fill_result_6(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
+    uint8_t* tmp_ip = ip;
     result.length = 2 + lzo1x_cnt_length(&ip, first_b.fb6.l, 31);
     uint16_t le16 = ((*(ip + 2) << NEXT_BYTE_OFFSET) + *(ip + 1));
     result.dist = (le16 >> 2) + 1;
     result.state = le16 & BYTE_STATE_MASK;
+    result.size_instr += 3 + (ip - tmp_ip);
     ip += 3;
     return result;
 }
@@ -80,10 +84,12 @@ lzo1x_dins_t lzo1x_fill_result_6(uint8_t* ip, lzo1x_fb_t first_b)
 lzo1x_dins_t lzo1x_fill_result_5(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
+    uint8_t* tmp_ip = ip;
     result.length = 2 + lzo1x_cnt_length(&ip, first_b.fb5.l, 7);
     uint16_t le16 = ((*(ip + 2) << NEXT_BYTE_OFFSET) + *(ip + 1));
     result.state = le16 & BYTE_STATE_MASK;
     result.dist = KB16 + (first_b.fb5.h << 14) + (le16 >> 2);
+    result.size_instr += 3 + (ip - tmp_ip);
     ip += 3;
     return result;
 }
@@ -94,9 +100,12 @@ lzo1x_dins_t lzo1x_fill_result_4(uint8_t* ip, lzo1x_fb_t first_b, uint32_t prev_
     lzo1x_dins_t result;
     if(prev_stats == 0) {
         // if prev isntruction copy 0 literals from input buffer
+        uint8_t* tmp_ip = ip;
         result.state = 3 + lzo1x_cnt_length(&ip, first_b.fb4z.l, 15);
         result.length = 0;
         result.dist = 0;
+        result.size_instr = 1 + (ip - tmp_ip);
+        ip += 1;
     } else { 
         uint16_t h = *(ip + 1);
         result.state = first_b.fb4s.s;
@@ -104,13 +113,15 @@ lzo1x_dins_t lzo1x_fill_result_4(uint8_t* ip, lzo1x_fb_t first_b, uint32_t prev_
             // if prev instructions copy 4 or more literals
             result.dist = (h << 2) + first_b.fb4s.d + 2049;
             result.length = 3;
+            result.size_instr = 2;
         } else {
             // if prev instruction copy between 1..3 literals from input buffer
             result.dist = (h << 2) + first_b.fb4s.d + 1;
             result.length = 2;
+            result.size_instr = 2;
         }
+        ip += 2;
     }
-    ip += 1;
     return result;
 }
 
@@ -120,6 +131,7 @@ lzo1x_dins_t lzo1x_get_data_ins(uint8_t *ip, lzo1x_fb_t first_b, uint8_t type_of
     result.dist = 0;
     result.length = 0;
     result.state = 0;
+    result.type_instr = type_of_instruction;
     switch (type_of_instruction) {
     case LZO1X_FB_8_T: //128..255
         /* 1 L L D D D S  */
@@ -149,7 +161,7 @@ lzo1x_dins_t lzo1x_get_data_ins(uint8_t *ip, lzo1x_fb_t first_b, uint8_t type_of
     return result;
 }
 
-void lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state)
+lzo1x_dins_t lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state)
 {
     lzo1x_fb_t first_b;
     first_b.fb = ip[0];
@@ -159,12 +171,31 @@ void lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state)
     // Get data from data blocks in instruction
     lzo1x_dins_t data = lzo1x_get_data_ins(ip, first_b, type_of_instruction, prev_state);
     printf("type: %-2d dist: %-10d state: %-7d length: %-10d\n", type_of_instruction, data.dist, data.state, data.length);
+    return data;
 }
 
-void lzo1x_launch_test_instr(uint8_t **arr_inst, size_t arr_size)
+
+void lzo1x_decode(uint8_t *in, size_t input_size, uint8_t *out, size_t output_size)
 {
-    for(size_t index = 0; index < arr_size; index++) {
-        printf("%-3ld:", index); 
-        lzo1x_decode_instr(arr_inst[index], 0);
+    // Start
+    uint8_t *ip = in;
+    uint8_t *op = out;
+    // Decode first byte instruction
+
+    // Main part
+    bool stop = false;
+    uint32_t prev_state = 0;
+    while(!stop) {
+        // Decode instruction
+        lzo1x_dins_t tmp_instr = lzo1x_decode_instr(ip, prev_state);
+        ip += tmp_instr.size_instr;
+        // Checkin' stop flag
+        if((tmp_instr.type_instr == LZO1X_FB_5_T) && (tmp_instr.dist == KB16)) {
+            stop = true;
+        } else {
+            /* Execute instruction */
+            uint8_t *m_pos = ip; 
+        }
     }
+
 }
