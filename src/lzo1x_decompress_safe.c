@@ -120,7 +120,7 @@ copy_literal_run:
 			next = get_unaligned_le16(ip);
 			if (((next & 0xfffc) == 0xfffc) &&
 			    ((t & 0xf8) == 0x18) &&
-			    likely(bitstream_version)) {
+			    likely(bitstream_version)) {  // if bitstream == 1
 				NEED_IP(3);
 				t &= 7;
 				t |= ip[2] << 3;

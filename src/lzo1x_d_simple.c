@@ -2,16 +2,17 @@
 
 /* NEW FUNCTIONS */
 
-uint32_t lzo1x_cnt_length(uint8_t* ip, uint32_t length)
+uint32_t lzo1x_cnt_length(uint8_t** ip, uint32_t length, uint16_t offset)
 {
     uint32_t tmp_length = length;
-    uint8_t* tmp_p = ip + 1; // set pointer after first byte instruction.
+    uint8_t* tmp_p = *ip + 1; // set pointer after first byte instruction.
     if(tmp_length == 0) {
         while(*tmp_p == 0) { // if next byte is zero skip byte.
             tmp_p++; 
         }        
-        uint32_t cnt_zeroes = tmp_p - ip; // distance between pointers is a count of bytes.
-        tmp_length = 15 + 255 * cnt_zeroes + *tmp_p;
+        uint32_t cnt_zeroes = tmp_p - *ip - 1; // distance between pointers is a count of bytes.
+        tmp_length = 31 + 255 * cnt_zeroes + *tmp_p;
+        *ip = tmp_p;
     }
     return tmp_length;
 }
@@ -36,11 +37,12 @@ uint8_t lzo1x_get_type_instr(lzo1x_fb_t first_b)
                     type_of_instruction = LZO1X_FB_4_T;
                 }
             }
-        }
+            }
     }
     return type_of_instruction;
 }
 
+// 128..255
 lzo1x_dins_t lzo1x_fill_result_8(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
@@ -51,6 +53,7 @@ lzo1x_dins_t lzo1x_fill_result_8(uint8_t* ip, lzo1x_fb_t first_b)
     return result;
 }
 
+// 64..127
 lzo1x_dins_t lzo1x_fill_result_7(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
@@ -61,37 +64,39 @@ lzo1x_dins_t lzo1x_fill_result_7(uint8_t* ip, lzo1x_fb_t first_b)
     return result;
 }
 
+// 32..63
 lzo1x_dins_t lzo1x_fill_result_6(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
-    result.length = first_b.fb6.l + 2;
-    uint16_t le16 = ((*(ip + 1) << NEXT_BYTE_OFFSET) + *(ip + 2));
+    result.length = 2 + lzo1x_cnt_length(&ip, first_b.fb6.l, 31);
+    uint16_t le16 = ((*(ip + 2) << NEXT_BYTE_OFFSET) + *(ip + 1));
     result.dist = (le16 >> 2) + 1;
     result.state = le16 & BYTE_STATE_MASK;
     ip += 3;
     return result;
 }
 
+// 16..31
 lzo1x_dins_t lzo1x_fill_result_5(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
-    uint16_t le16 = ((*(ip + 1) << NEXT_BYTE_OFFSET) + *(ip + 2));
-    result.length = first_b.fb5.l;
+    uint16_t le16 = ((*(ip + 2) << NEXT_BYTE_OFFSET) + *(ip + 1));
+    result.length = 2 + lzo1x_cnt_length(&ip, first_b.fb5.l, 7);
     result.state = le16 & BYTE_STATE_MASK;
     result.dist = KB16 + (first_b.fb5.h << 14) + (le16 >> 2);
     ip += 3;
     return result;
 }
 
+// 0..15
 lzo1x_dins_t lzo1x_fill_result_4(uint8_t* ip, lzo1x_fb_t first_b, uint32_t prev_stats)
 {
     lzo1x_dins_t result;
     if(prev_stats == 0) {
         // if prev isntruction copy 0 literals from input buffer
-        result.state = 3 + lzo1x_cnt_length(ip, first_b.fb4z.l);
+        result.state = 3 + lzo1x_cnt_length(&ip, first_b.fb4z.l, 15);
         result.length = 0;
         result.dist = 0;
-        // result.dist_next = 0;
     } else { 
         uint16_t h = *(ip + 1);
         result.state = first_b.fb4s.s;
@@ -115,7 +120,6 @@ lzo1x_dins_t lzo1x_get_data_ins(uint8_t *ip, lzo1x_fb_t first_b, uint8_t type_of
     result.dist = 0;
     result.length = 0;
     result.state = 0;
-    // result.dist_next = 0;
     switch (type_of_instruction) {
     case LZO1X_FB_8_T: //128..255
         /* 1 L L D D D S  */
@@ -134,7 +138,8 @@ lzo1x_dins_t lzo1x_get_data_ins(uint8_t *ip, lzo1x_fb_t first_b, uint8_t type_of
         result = lzo1x_fill_result_5(ip, first_b);
         break;
     case LZO1X_FB_4_T: //0..15
-        /* code */
+        /* 0 0 0 0 X X X X */
+        result = lzo1x_fill_result_4(ip, first_b, prev_state);
         break;
     default:
         printf("Unexpected instruction!\n");
@@ -153,5 +158,5 @@ void lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state)
     uint8_t type_of_instruction = lzo1x_get_type_instr(first_b);
     // Get data from data blocks in instruction
     lzo1x_dins_t data = lzo1x_get_data_ins(ip, first_b, type_of_instruction, prev_state);
-    printf("type: %d, dist: %d, state: %d, length: %d\n", type_of_instruction, data.dist, data.state, data.length);
+    printf("type: %-2d dist: %-10d state: %-7d length: %-10d\n", type_of_instruction, data.dist, data.state, data.length);
 }

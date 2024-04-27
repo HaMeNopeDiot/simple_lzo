@@ -32,21 +32,21 @@ typedef struct {
 
 /* 
     Parameters readed from instruction. Each instruction may contain values like state, lenght, dist, dist_next
-    state. This parameter have two definitions:
-        - 1. Status of current instruction. This need only for some next instructions (from rande [0..15]).
-             Instruction read prevent state of instructions and interprets instructions differently depending
-             on the previous state
-        - 2. Count of copyed instructions from input buffer.
-    length. Count of bytes need to copy from dictinary (output buffer)
-    dist. Distance in bytes, where need to move output pointer to take bytes.
-    dist_next. Distance in bytes to next instruction in input buffer.
+        - 1 state. This parameter have two definitions:
+            - I. Status of current instruction. This need only for some next instructions (from rande [0..15]).
+                 Instruction read prevent state of instructions and interprets instructions differently depending
+                 on the previous state
+            - II. Count of copyed instructions from input buffer.
+        - 2 length. Count of bytes need to copy from dictinary (output buffer)
+        - 3 dist. Distance in bytes, where need to move output pointer to take bytes.
+        - 4 dist_next. Distance in bytes to next instruction in input buffer.
     
 */
 typedef struct {
-    uint32_t state;
-    uint32_t length;
-    uint32_t dist;
-    uint32_t dist_next;
+    uint32_t state;     // state or count of literals need to copy from input buffer
+    uint32_t length;    // count bytes need to copy
+    uint32_t dist;      // range between output buffer and place where need to copy literals
+    uint32_t dist_next; // dist to next instruction
 } lzo1x_dins_t;
 
 
