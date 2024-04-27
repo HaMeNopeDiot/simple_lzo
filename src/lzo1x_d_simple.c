@@ -11,7 +11,7 @@ uint32_t lzo1x_cnt_length(uint8_t** ip, uint32_t length, uint16_t offset)
             tmp_p++; 
         }        
         uint32_t cnt_zeroes = tmp_p - *ip - 1; // distance between pointers is a count of bytes.
-        tmp_length = 31 + 255 * cnt_zeroes + *tmp_p;
+        tmp_length = offset + 255 * cnt_zeroes + *tmp_p;
         *ip = tmp_p;
     }
     return tmp_length;
@@ -80,8 +80,8 @@ lzo1x_dins_t lzo1x_fill_result_6(uint8_t* ip, lzo1x_fb_t first_b)
 lzo1x_dins_t lzo1x_fill_result_5(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
-    uint16_t le16 = ((*(ip + 2) << NEXT_BYTE_OFFSET) + *(ip + 1));
     result.length = 2 + lzo1x_cnt_length(&ip, first_b.fb5.l, 7);
+    uint16_t le16 = ((*(ip + 2) << NEXT_BYTE_OFFSET) + *(ip + 1));
     result.state = le16 & BYTE_STATE_MASK;
     result.dist = KB16 + (first_b.fb5.h << 14) + (le16 >> 2);
     ip += 3;
@@ -159,4 +159,12 @@ void lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state)
     // Get data from data blocks in instruction
     lzo1x_dins_t data = lzo1x_get_data_ins(ip, first_b, type_of_instruction, prev_state);
     printf("type: %-2d dist: %-10d state: %-7d length: %-10d\n", type_of_instruction, data.dist, data.state, data.length);
+}
+
+void lzo1x_launch_test_instr(uint8_t **arr_inst, size_t arr_size)
+{
+    for(size_t index = 0; index < arr_size; index++) {
+        printf("%-3ld:", index); 
+        lzo1x_decode_instr(arr_inst[index], 0);
+    }
 }

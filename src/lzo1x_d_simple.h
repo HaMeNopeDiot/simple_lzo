@@ -122,7 +122,7 @@ typedef union
 /* NEW FUNCTIONS */
 
 void lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state);
-
+void lzo1x_launch_test_instr(uint8_t **arr_inst, size_t arr_size);
 
 
 #endif /* LZO1X_D_SIMPLE_H */
