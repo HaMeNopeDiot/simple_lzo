@@ -73,6 +73,15 @@ void testbench_decode_instructions()
     uint8_t ii_12[] = {0x18, 0x20, 0x07, 0x01};
     uint8_t ii_13[] = {0x1D, 0x01, 0x00};
     uint8_t ii_14[] = {0x10, 0x00, 0x05, 0x10, 0x20};
+        // 0 0 0 0 X X X X
+            // 0 0 0 0 L L L L (== 0)
+    uint8_t ii_15[] = {0x07};
+    uint8_t ii_16[] = {0x00, 0xAB};
+    uint8_t ii_17[] = {0x00, 0x00, 0xDE};
+            // 0 0 0 0 D D S S (!= 0)
+    uint8_t ii_18[] = {0x07, 0x02};
+    uint8_t ii_19[] = {0x02, 0x03};
+    uint8_t ii_20[] = {0x08, 0x08};
     // DECODING
     printf("01:"); lzo1x_decode_instr(ii_1, 0);
     printf("02:"); lzo1x_decode_instr(ii_2, 0);
@@ -88,6 +97,15 @@ void testbench_decode_instructions()
     printf("12:"); lzo1x_decode_instr(ii_12, 0);
     printf("13:"); lzo1x_decode_instr(ii_13, 0);
     printf("14:"); lzo1x_decode_instr(ii_14, 0);
+    printf("15:"); lzo1x_decode_instr(ii_15, 0);
+    printf("16:"); lzo1x_decode_instr(ii_16, 0);
+    printf("17:"); lzo1x_decode_instr(ii_17, 0);
+    printf("18:"); lzo1x_decode_instr(ii_18, 1);
+    printf("19:"); lzo1x_decode_instr(ii_19, 2);
+    printf("20:"); lzo1x_decode_instr(ii_20, 3);
+    printf("18:"); lzo1x_decode_instr(ii_18, 4);
+    printf("19:"); lzo1x_decode_instr(ii_19, 4);
+    printf("20:"); lzo1x_decode_instr(ii_20, 4);
 }
 
 int main(int argc, char *argv[])
