@@ -48,7 +48,7 @@ typedef struct {
     uint32_t state;         // state or count of literals need to copy from input buffer
     uint32_t length;        // count bytes need to copy
     uint32_t dist;          // range between output buffer and place where need to copy literals
-    uint32_t size_instr;    // size of instruction
+    uint32_t len_instr;    // size of instruction
 } lzo1x_dins_t;
 
 
