@@ -141,7 +141,6 @@ lzo1x_dins_t lzo1x_get_data_ins(uint8_t *ip, lzo1x_fb_t first_b, uint8_t type_of
     result.dist = 0;
     result.length = 0;
     result.state = 0;
-    result.type_instr = type_of_instruction;
     switch (type_of_instruction) {
     case LZO1X_FB_8_T: //128..255
         /* 1 L L D D D S  */
@@ -168,6 +167,7 @@ lzo1x_dins_t lzo1x_get_data_ins(uint8_t *ip, lzo1x_fb_t first_b, uint8_t type_of
         exit(1);
         break;
     }
+    result.type_instr = type_of_instruction;
     return result;
 }
 
@@ -175,12 +175,12 @@ lzo1x_dins_t lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state)
 {
     lzo1x_fb_t first_b;
     first_b.fb = ip[0];
-    printf("tb: 0x%-2x -> ",ip[0]);
+    //printf("tb: 0x%-2x -> ",ip[0]);
     // Get type of instruction
     uint8_t type_of_instruction = lzo1x_get_type_instr(first_b);
     // Get data from data blocks in instruction
     lzo1x_dins_t data = lzo1x_get_data_ins(ip, first_b, type_of_instruction, prev_state);
-    printf("type: %-2d dist: %-10d state: %-7d length: %-10d, len_inst: %-5d\n", type_of_instruction, data.dist, data.state, data.length, data.len_instr);
+    //printf("type: %-2d dist: %-10d state: %-7d length: %-10d, len_inst: %-5d\n", type_of_instruction, data.dist, data.state, data.length, data.len_instr);
     return data;
 }
 
@@ -193,10 +193,11 @@ uint8_t lzo1x_decode(uint8_t *in, size_t input_size, uint8_t *out, size_t output
     // Decode first byte instruction
     if(*ip > 16) {
         if(*ip == 17) {
-            *ip += 2;
+            ip += 2;
         } else {
             lzo1x_dins_t tmp_instr = lzo1x_dins_init();
             tmp_instr.state = *ip - 17;
+            ip++;
             uint32_t state = tmp_instr.state;
             while(state--) {
                 *(op++) = *(ip++);

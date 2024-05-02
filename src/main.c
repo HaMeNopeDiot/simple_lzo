@@ -35,6 +35,9 @@ int simple_lzo(int argc, char* argv[])
     case TEST_STATUS:
         status_prog = lzo_test(init_obj->input_file, init_obj->output_file, init_obj->btstrm_ver);
         break;
+    case DCMP_STATUS_SMP:
+        status_prog = lzo_simple_decode(init_obj->input_file, init_obj->output_file);
+        break;
     default:
         status_prog = 0;
         break;
@@ -108,8 +111,38 @@ void testbench_decode_instructions()
     printf("20:"); lzo1x_decode_instr(ii_20, 4);
 }
 
+void testbench_lzo_decoding_stream()
+{
+    uint8_t input_stream[] = {0x06, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x50, 0x00, 0x11, 0x00, 0x00};
+    //printf("dec: %ld\n", sizeof(input_stream));
+    uint8_t *output_stream = (uint8_t*)calloc(sizeof(input_stream) * 2, sizeof(uint8_t));
+    size_t inpt_len = sizeof(input_stream);
+    size_t outp_len = inpt_len * 2;
+    lzo1x_decode(input_stream, inpt_len, output_stream, outp_len);
+
+    printf("Input:");
+    for(size_t i = 0; i < inpt_len; i++) {
+        printf("0x%-2x ", input_stream[i]);
+    }
+    printf("\n");
+    printf("Output:");
+    for(size_t i = 0; i < outp_len; i++) {
+        printf("0x%-2x ", output_stream[i]);
+    }
+    printf("\n");
+
+    free(output_stream);
+}
+
+void testbench_lzo_decode_file()
+{
+
+}
+
 int main(int argc, char *argv[])
 {
-    testbench_decode_instructions();
-    return 0;//simple_lzo(argc, argv);
+    //  testbench_decode_instructions();
+    // testbench_lzo_decoding_stream();
+    simple_lzo(argc, argv);
+    return 0;
 }

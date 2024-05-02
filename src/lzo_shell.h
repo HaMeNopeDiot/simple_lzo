@@ -29,6 +29,6 @@ int lzo_compress(char* input_path, char* output_path, int lzo_ver);
 int lzo_decompress(char* input_path, char* output_path);
 int lzo_test(char* input_path, char* output_path, int lzo_ver);
 int lzo_compress_switch(file_buf_t *src, file_buf_t *dst, void *wrkmem, int lzo_ver);
-
+int lzo_simple_decode(char* input_path, char* output_path);
 
 #endif /* LZO_SHELL_H */
