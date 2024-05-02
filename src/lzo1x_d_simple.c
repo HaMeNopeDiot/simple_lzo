@@ -17,6 +17,16 @@ uint32_t lzo1x_cnt_length(uint8_t** ip, uint32_t length, uint16_t offset)
     return tmp_length;
 }
 
+lzo1x_dins_t lzo1x_dins_init()
+{
+    lzo1x_dins_t object;
+    object.state      = 0;
+    object.dist       = 0;
+    object.len_instr  = 0;
+    object.length     = 0;
+    object.type_instr = 0;
+    return object;
+}
 
 
 uint8_t lzo1x_get_type_instr(lzo1x_fb_t first_b)
@@ -175,13 +185,24 @@ lzo1x_dins_t lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state)
 }
 
 
-void lzo1x_decode(uint8_t *in, size_t input_size, uint8_t *out, size_t output_size)
+uint8_t lzo1x_decode(uint8_t *in, size_t input_size, uint8_t *out, size_t output_size)
 {
     // Start
     uint8_t *ip = in;
     uint8_t *op = out;
     // Decode first byte instruction
-
+    if(*ip > 16) {
+        if(*ip == 17) {
+            *ip += 2;
+        } else {
+            lzo1x_dins_t tmp_instr = lzo1x_dins_init();
+            tmp_instr.state = *ip - 17;
+            uint32_t state = tmp_instr.state;
+            while(state--) {
+                *(op++) = *(ip++);
+            } 
+        }
+    }
     // Main part
     bool stop = false;
     uint32_t prev_state = 0;
@@ -196,15 +217,15 @@ void lzo1x_decode(uint8_t *in, size_t input_size, uint8_t *out, size_t output_si
             /* Execute instruction */
             uint8_t *m_pos = op - tmp_instr.dist;
             uint32_t length = tmp_instr.length;
-            while(length) {
+            while(length--) {
                 *(op++) = *(m_pos++);
             }
             uint32_t state = tmp_instr.state;
-            while(state) {
+            while(state--) {
                 *(op++) = *(ip++);
             }
 
         }
     }
-
+    return 0;
 }
