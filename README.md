@@ -18,3 +18,17 @@ In this code you can see two realizations for decompressor. One of them this fro
 This algorithm working good if compress text data, yaml or xml files. In some cases algorithm can compress data into bigger value that was be.
 
 Also I used file "LZO stream format as understood by Linux's LZO decompressor" for understanding of work decompressor.
+
+Tested on Linux & Windows (with MinGW)
+## How to use
+
+To run this variant of lzo need to run in console:
+```
+make
+```
+After build, you can use it. For get help note, try this:
+```
+./lzo1x -h
+```
+For compress something you can just using ```-i``` argument put path to compressiable file. This program for compressed file have output default path and name. But I recommend to choose output path for file, using ```-o```.
+If you want to decompress file, you need to use ```-d``` argument.
