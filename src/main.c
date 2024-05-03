@@ -6,6 +6,35 @@
 
 bool Verbose = false;
 
+char* get_status_prs_args(int status)
+{
+    char* status_str;
+    switch(status) {
+        case ERRR_STATUS     :
+            status_str = strdup(ERRR_STR_STATUS);
+            break;
+        case HELP_STATUS     :
+            status_str = strdup(HELP_STR_STATUS);
+            break;
+        case TEST_STATUS     :
+            status_str = strdup(TEST_STR_STATUS);
+            break;
+        case COMP_STATUS     :
+            status_str = strdup(COMP_STR_STATUS);
+            break;
+        case DCMP_STATUS     :
+            status_str = strdup(DCMP_STR_STATUS);
+            break;
+        case DCMP_STATUS_SMP :
+            status_str = strdup(DCMP_STR_STATUS_SMP);
+            break;
+        default:
+            status_str = strdup("Unknown status");
+            break;
+    }
+    return status_str;
+}
+
 int simple_lzo(int argc, char* argv[])
 {
     prs_args_t *init_obj = parse_args(argc, argv);
@@ -22,7 +51,11 @@ int simple_lzo(int argc, char* argv[])
         }
         free(folder);
     }
-    verbose("INIT\nSource: %s\nOut: %s\nStatus: %d\n", init_obj->input_file, init_obj->output_file, init_obj->status);
+
+    verbose("INIT\nSource: %s\nOut: %s\nStatus: \"%s\" (%d)\n", \
+    init_obj->input_file, init_obj->output_file,                \
+    get_status_prs_args(init_obj->status), init_obj->status);
+
     int status_prog = 0;
     switch (init_obj->status)
     {
@@ -118,7 +151,7 @@ void testbench_lzo_decoding_stream()
     uint8_t *output_stream = (uint8_t*)calloc(sizeof(input_stream) * 2, sizeof(uint8_t));
     size_t inpt_len = sizeof(input_stream);
     size_t outp_len = inpt_len * 2;
-    lzo1x_decode(input_stream, inpt_len, output_stream, outp_len);
+    lzo1x_decompress_simple(input_stream, inpt_len, output_stream, outp_len);
 
     printf("Input:");
     for(size_t i = 0; i < inpt_len; i++) {
@@ -132,11 +165,6 @@ void testbench_lzo_decoding_stream()
     printf("\n");
 
     free(output_stream);
-}
-
-void testbench_lzo_decode_file()
-{
-
 }
 
 int main(int argc, char *argv[])

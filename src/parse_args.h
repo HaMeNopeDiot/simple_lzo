@@ -15,6 +15,13 @@
 #define DCMP_STATUS     3
 #define DCMP_STATUS_SMP 4
 
+#define ERRR_STR_STATUS     "Error"
+#define HELP_STR_STATUS     "Help"
+#define TEST_STR_STATUS     "Test"
+#define COMP_STR_STATUS     "Compress"
+#define DCMP_STR_STATUS     "Decompress (safe)"
+#define DCMP_STR_STATUS_SMP "Decompress (simple)"
+
 typedef struct {
     char* input_file;
     char* output_file;

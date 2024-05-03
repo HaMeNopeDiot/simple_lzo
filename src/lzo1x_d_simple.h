@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "lzo.h"
 #include "file_buf.h"
 
 #define LZO1X_FB_8_T 8
@@ -126,8 +127,7 @@ typedef union
 /* NEW FUNCTIONS */
 
 lzo1x_dins_t lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state);
-
-uint8_t lzo1x_decode(uint8_t *in, size_t input_size, uint8_t *out, size_t output_size);
+int lzo1x_decompress_simple(uint8_t *in, size_t input_size, uint8_t *out, size_t output_size);
 
 
 #endif /* LZO1X_D_SIMPLE_H */

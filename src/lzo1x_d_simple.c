@@ -184,13 +184,44 @@ lzo1x_dins_t lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state)
     return data;
 }
 
-
-uint8_t lzo1x_decode(uint8_t *in, size_t input_size, uint8_t *out, size_t output_size)
+void lzo1x_cpy_from_input_p(uint8_t **ip, uint8_t **op, uint32_t state)
 {
-    // Start
+    while(state--) {
+        *((*op)++) = *((*ip)++);
+    }
+}
+
+void lzo1x_cpy_from_dict(uint8_t **op, uint8_t **dp, uint32_t length)
+{
+    while(length--) {
+        *((*op)++) = *((*dp)++);
+    }
+}
+
+int lzo1x_cmp_input_ptrs(uint8_t *ip, uint8_t *ip_end)
+{
+    return  ip_end == ip ? LZO_E_OK: 
+            ip_end >  ip ? LZO_E_INPUT_NOT_CONSUMED: LZO_E_INPUT_OVERRUN;
+}
+
+int lzo1x_cmp_output_ptrs(uint8_t *op, uint8_t *op_end)
+{
+    return op > op_end? LZO_E_OUTPUT_OVERRUN: LZO_E_OK;
+}
+
+int lzo1x_decompress_simple(uint8_t *in, size_t input_size, uint8_t *out, size_t output_size)
+{
+    /* Start */
     uint8_t *ip = in;
     uint8_t *op = out;
-    // Decode first byte instruction
+
+    uint8_t *in_end = in + input_size;
+    uint8_t *op_end = op + output_size;
+    /* Check minimal size of input stream */
+    if(input_size < 3) {
+        return LZO_E_INPUT_OVERRUN;
+    }
+    /* Decode first byte instruction */
     if(*ip > 16) {
         if(*ip == 17) {
             ip += 2;
@@ -198,35 +229,30 @@ uint8_t lzo1x_decode(uint8_t *in, size_t input_size, uint8_t *out, size_t output
             lzo1x_dins_t tmp_instr = lzo1x_dins_init();
             tmp_instr.state = *ip - 17;
             ip++;
-            uint32_t state = tmp_instr.state;
-            while(state--) {
-                *(op++) = *(ip++);
-            } 
+            lzo1x_cpy_from_input_p(&ip, &op, tmp_instr.state); 
         }
     }
-    // Main part
+    /* Main part */
     bool stop = false;
     uint32_t prev_state = 0;
     while(!stop) {
-        // Decode instruction
+        /* Decode instruction */
         lzo1x_dins_t tmp_instr = lzo1x_decode_instr(ip, prev_state);
         ip += tmp_instr.len_instr;
-        // Checking stop flag
+        /* Checking stop flag */
         if((tmp_instr.type_instr == LZO1X_FB_5_T) && (tmp_instr.dist == KB16)) {
             stop = true;
         } else {
             /* Execute instruction */
             uint8_t *m_pos = op - tmp_instr.dist;
-            uint32_t length = tmp_instr.length;
-            while(length--) {
-                *(op++) = *(m_pos++);
-            }
-            uint32_t state = tmp_instr.state;
-            while(state--) {
-                *(op++) = *(ip++);
-            }
+            lzo1x_cpy_from_dict(&op, &m_pos, tmp_instr.length);
+            lzo1x_cpy_from_input_p(&ip, &op, tmp_instr.state);
 
+            int status_output_ptr = lzo1x_cmp_output_ptrs(op, op_end); 
+            if(status_output_ptr != LZO_E_OK) {
+                return status_output_ptr;
+            }
         }
     }
-    return 0;
+    return lzo1x_cmp_input_ptrs(ip, in_end);
 }

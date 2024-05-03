@@ -2,6 +2,51 @@
 
 #define DEFAULT_OUT_OVERWRITE_BUFFER ((16) * ((src->size_buf) / (1024)))
 
+
+char* lzo_status_to_str(int decompression_status)
+{
+    char *status_str;
+    switch(decompression_status) {
+        case LZO_E_OK:		
+            status_str = strdup(LZO_STR_E_OK);
+            break;
+        case LZO_E_ERROR:			
+            status_str = strdup(LZO_STR_E_ERROR);
+            break;
+        case LZO_E_OUT_OF_MEMORY:		
+            status_str = strdup(LZO_STR_E_OUT_OF_MEMORY);
+            break;
+        case LZO_E_NOT_COMPRESSIBLE:		
+            status_str = strdup(LZO_STR_E_NOT_COMPRESSIBLE);
+            break;
+        case LZO_E_INPUT_OVERRUN:		
+            status_str = strdup(LZO_STR_E_INPUT_OVERRUN);
+            break;
+        case LZO_E_OUTPUT_OVERRUN:		
+            status_str = strdup(LZO_STR_E_OUTPUT_OVERRUN);
+            break;
+        case LZO_E_LOOKBEHIND_OVERRUN:	
+            status_str = strdup(LZO_STR_E_LOOKBEHIND_OVERRUN);
+            break;
+        case LZO_E_EOF_NOT_FOUND:		
+            status_str = strdup(LZO_STR_E_EOF_NOT_FOUND);
+            break;
+        case LZO_E_INPUT_NOT_CONSUMED:	
+            status_str = strdup(LZO_STR_E_INPUT_NOT_CONSUMED);
+            break;
+        case LZO_E_NOT_YET_IMPLEMENTED:	
+            status_str = strdup(LZO_STR_E_NOT_YET_IMPLEMENTED);
+            break;
+        case LZO_E_INVALID_ARGUMENT:
+            status_str = strdup(LZO_STR_E_INVALID_ARGUMENT);
+            break;
+        default:
+            status_str = strdup("Unknown status");
+            break;
+    }
+    return status_str;		
+}
+
 double get_time_in_seconds(clock_t begin, clock_t end)
 {
     return (double)(end - begin) / CLOCKS_PER_SEC;
@@ -81,7 +126,7 @@ int lzo_decompress(char* input_path, char* output_path)
     size_t tmp_req = atoi((char*)src_size->buf);
     file_buf_t* dst = file_buf_init_osize(tmp_req);
     int lzo1x_1_dec_status = lzo1x_decompress_safe(src->buf, src->size_buf, dst->buf, &(dst->size_buf));
-    verbose("@ Decompression status: %d\n", lzo1x_1_dec_status);
+    verbose("@ Decompression status: [%s] (%d)\n", lzo_status_to_str(lzo1x_1_dec_status), lzo1x_1_dec_status);
     file_buf_write_file(output_path, dst); // Input in file
     // Free memory
     file_buf_free(src);
@@ -131,8 +176,8 @@ int lzo_simple_decode(char* input_path, char* output_path)
     file_buf_t* src_size = file_buf_read_file(path_size_input);
     size_t tmp_req = atoi((char*)src_size->buf);
     file_buf_t* dst = file_buf_init_osize(tmp_req);
-    int lzo1x_1_dec_status = lzo1x_decode(src->buf, src->size_buf, dst->buf, (dst->size_buf));
-    verbose("@ Decompression status: %d\n", lzo1x_1_dec_status);
+    int lzo1x_1_dec_status = lzo1x_decompress_simple(src->buf, src->size_buf, dst->buf, (dst->size_buf));
+    verbose("@ Decompression status: [%s] (%d)\n", lzo_status_to_str(lzo1x_1_dec_status), lzo1x_1_dec_status);
     file_buf_write_file(output_path, dst); // Input in file
     // Free memory
     file_buf_free(src);
