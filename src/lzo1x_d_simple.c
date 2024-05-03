@@ -2,7 +2,7 @@
 
 /* NEW FUNCTIONS */
 
-uint32_t lzo1x_cnt_length(uint8_t** ip, uint32_t length, uint16_t offset)
+static uint32_t lzo1x_cnt_length(uint8_t** ip, uint32_t length, uint16_t offset)
 {
     uint32_t tmp_length = length;
     uint8_t* tmp_p = *(ip) + 1; // set pointer after first byte instruction.
@@ -17,7 +17,7 @@ uint32_t lzo1x_cnt_length(uint8_t** ip, uint32_t length, uint16_t offset)
     return tmp_length;
 }
 
-lzo1x_dins_t lzo1x_dins_init()
+static lzo1x_dins_t lzo1x_dins_init()
 {
     lzo1x_dins_t object;
     object.state      = 0;
@@ -29,7 +29,7 @@ lzo1x_dins_t lzo1x_dins_init()
 }
 
 
-uint8_t lzo1x_get_type_instr(lzo1x_fb_t first_b)
+static uint8_t lzo1x_get_type_instr(lzo1x_fb_t first_b)
 {
     uint8_t type_of_instruction;
     if(first_b.fb8.prefix == LZO1X_PREFIX_TAG) {
@@ -53,7 +53,7 @@ uint8_t lzo1x_get_type_instr(lzo1x_fb_t first_b)
 }
 
 // 128..255
-lzo1x_dins_t lzo1x_fill_result_8(uint8_t* ip, lzo1x_fb_t first_b)
+static lzo1x_dins_t lzo1x_fill_result_8(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
     result.state = first_b.fb8.s;
@@ -65,7 +65,7 @@ lzo1x_dins_t lzo1x_fill_result_8(uint8_t* ip, lzo1x_fb_t first_b)
 }
 
 // 64..127
-lzo1x_dins_t lzo1x_fill_result_7(uint8_t* ip, lzo1x_fb_t first_b)
+static lzo1x_dins_t lzo1x_fill_result_7(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
     result.state = first_b.fb7.s;
@@ -77,7 +77,7 @@ lzo1x_dins_t lzo1x_fill_result_7(uint8_t* ip, lzo1x_fb_t first_b)
 }
 
 // 32..63
-lzo1x_dins_t lzo1x_fill_result_6(uint8_t* ip, lzo1x_fb_t first_b)
+static lzo1x_dins_t lzo1x_fill_result_6(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
     uint8_t *tmp_ip = ip;
@@ -91,7 +91,7 @@ lzo1x_dins_t lzo1x_fill_result_6(uint8_t* ip, lzo1x_fb_t first_b)
 }
 
 // 16..31
-lzo1x_dins_t lzo1x_fill_result_5(uint8_t* ip, lzo1x_fb_t first_b)
+static lzo1x_dins_t lzo1x_fill_result_5(uint8_t* ip, lzo1x_fb_t first_b)
 {
     lzo1x_dins_t result;
     uint8_t *tmp_ip = ip;
@@ -105,7 +105,7 @@ lzo1x_dins_t lzo1x_fill_result_5(uint8_t* ip, lzo1x_fb_t first_b)
 }
 
 // 0..15
-lzo1x_dins_t lzo1x_fill_result_4(uint8_t* ip, lzo1x_fb_t first_b, uint32_t prev_stats)
+static lzo1x_dins_t lzo1x_fill_result_4(uint8_t* ip, lzo1x_fb_t first_b, uint32_t prev_stats)
 {
     lzo1x_dins_t result;
     if(prev_stats == 0) {
@@ -135,7 +135,7 @@ lzo1x_dins_t lzo1x_fill_result_4(uint8_t* ip, lzo1x_fb_t first_b, uint32_t prev_
     return result;
 }
 
-lzo1x_dins_t lzo1x_get_data_ins(uint8_t *ip, lzo1x_fb_t first_b, uint8_t type_of_instruction, uint32_t prev_state)
+static lzo1x_dins_t lzo1x_get_data_ins(uint8_t *ip, lzo1x_fb_t first_b, uint8_t type_of_instruction, uint32_t prev_state)
 {
     lzo1x_dins_t result;
     result.dist = 0;
@@ -184,27 +184,27 @@ lzo1x_dins_t lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state)
     return data;
 }
 
-void lzo1x_cpy_from_input_p(uint8_t **ip, uint8_t **op, uint32_t state)
+static void lzo1x_cpy_from_input_p(uint8_t **ip, uint8_t **op, uint32_t state)
 {
     while(state--) {
         *((*op)++) = *((*ip)++);
     }
 }
 
-void lzo1x_cpy_from_dict(uint8_t **op, uint8_t **dp, uint32_t length)
+static void lzo1x_cpy_from_dict(uint8_t **op, uint8_t **dp, uint32_t length)
 {
     while(length--) {
         *((*op)++) = *((*dp)++);
     }
 }
 
-int lzo1x_cmp_input_ptrs(uint8_t *ip, uint8_t *ip_end)
+static int lzo1x_cmp_input_ptrs(const uint8_t *ip, const uint8_t *ip_end)
 {
     return  ip_end == ip ? LZO_E_OK: 
             ip_end >  ip ? LZO_E_INPUT_NOT_CONSUMED: LZO_E_INPUT_OVERRUN;
 }
 
-int lzo1x_cmp_output_ptrs(uint8_t *op, uint8_t *op_end)
+static int lzo1x_cmp_output_ptrs(const uint8_t *op, const uint8_t *op_end)
 {
     return op > op_end? LZO_E_OUTPUT_OVERRUN: LZO_E_OK;
 }

@@ -3,7 +3,7 @@
 #define DEFAULT_OUT_OVERWRITE_BUFFER ((16) * ((src->size_buf) / (1024)))
 
 
-char* lzo_status_to_str(int decompression_status)
+static char* lzo_status_to_str(int decompression_status)
 {
     char *status_str;
     switch(decompression_status) {
