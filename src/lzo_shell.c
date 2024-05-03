@@ -69,7 +69,7 @@ int lzo_compress_switch(file_buf_t *src, file_buf_t *dst, void *wrkmem, int lzo_
     int lzo1x_1_status;
     switch (lzo_ver) {
     case LZO_VERSION:
-        printf("hel\n");
+        //printf("hel\n");
         lzo1x_1_status = lzorle1x_1_compress(src->buf, src->size_buf, dst->buf, &(dst->size_buf), (void*)(wrkmem));
         break;
     default:
@@ -116,7 +116,6 @@ int lzo_compress(char* input_path, char* output_path, int lzo_ver)
 
 int lzo_decompress(char* input_path, char* output_path)
 {
-
     file_buf_t* src = file_buf_read_file(input_path); // Try to read file
     //Find file and read size of source (not compressed file)
     char* size_file_tag = strdup(DEFAULT_SIZE_FILE_TAG);
@@ -176,7 +175,7 @@ int lzo_simple_decode(char* input_path, char* output_path)
     file_buf_t* src_size = file_buf_read_file(path_size_input);
     size_t tmp_req = atoi((char*)src_size->buf);
     file_buf_t* dst = file_buf_init_osize(tmp_req);
-    int lzo1x_1_dec_status = lzo1x_decompress_simple(src->buf, src->size_buf, dst->buf, (dst->size_buf));
+    int lzo1x_1_dec_status = lzo1x_decompress_simple(src->buf, src->size_buf, dst->buf, &(dst->size_buf));
     verbose("@ Decompression status: [%s] (%d)\n", lzo_status_to_str(lzo1x_1_dec_status), lzo1x_1_dec_status);
     file_buf_write_file(output_path, dst); // Input in file
     // Free memory

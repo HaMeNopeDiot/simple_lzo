@@ -175,12 +175,10 @@ lzo1x_dins_t lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state)
 {
     lzo1x_fb_t first_b;
     first_b.fb = ip[0];
-    //printf("tb: 0x%-2x -> ",ip[0]);
     // Get type of instruction
     uint8_t type_of_instruction = lzo1x_get_type_instr(first_b);
     // Get data from data blocks in instruction
     lzo1x_dins_t data = lzo1x_get_data_ins(ip, first_b, type_of_instruction, prev_state);
-    //printf("type: %-2d dist: %-10d state: %-7d length: %-10d, len_inst: %-5d\n", type_of_instruction, data.dist, data.state, data.length, data.len_instr);
     return data;
 }
 
@@ -209,50 +207,57 @@ static int lzo1x_cmp_output_ptrs(const uint8_t *op, const uint8_t *op_end)
     return op > op_end? LZO_E_OUTPUT_OVERRUN: LZO_E_OK;
 }
 
-int lzo1x_decompress_simple(uint8_t *in, size_t input_size, uint8_t *out, size_t output_size)
+int lzo1x_decompress_simple(uint8_t *in, size_t input_size, uint8_t *out, size_t *output_size)
 {
     /* Start */
-    uint8_t *ip = in;
-    uint8_t *op = out;
+    uint8_t *ip = in;   // Pointer-start to input stream
+    uint8_t *op = out;  // Pointer-start to output stream
 
-    uint8_t *in_end = in + input_size;
-    uint8_t *op_end = op + output_size;
+    uint8_t *in_end = in + input_size;    // end of input stream
+    uint8_t *out_end = op + *output_size; // maximum possible position of op
     /* Check minimal size of input stream */
-    if(input_size < 3) {
-        return LZO_E_INPUT_OVERRUN;
+    if(input_size < 3) { 
+        return LZO_E_INPUT_OVERRUN; // compressed file can't have size less than 3 bytes
     }
     /* Decode first byte instruction */
+    lzo1x_dins_t tmp_instr = lzo1x_dins_init(); // All fields this struct be 0.
     if(*ip > 16) {
         if(*ip == 17) {
-            ip += 2;
+            ip += 2; // Skip 2 bytes of bitstream version
         } else {
-            lzo1x_dins_t tmp_instr = lzo1x_dins_init();
-            tmp_instr.state = *ip - 17;
-            ip++;
-            lzo1x_cpy_from_input_p(&ip, &op, tmp_instr.state); 
+            tmp_instr.state = *ip - 17; // get count of copy symbols from input stream
+            ip++; // Move pointer one byte forward
+            lzo1x_cpy_from_input_p(&ip, &op, tmp_instr.state); // Copy bytes from input buffer to position op in output buffer. Both pointers must be go forward.
         }
     }
     /* Main part */
     bool stop = false;
-    uint32_t prev_state = 0;
+    uint32_t prev_state = tmp_instr.state; // If first byte was a instruction, that means state can be value no 0.
     while(!stop) {
         /* Decode instruction */
         lzo1x_dins_t tmp_instr = lzo1x_decode_instr(ip, prev_state);
-        ip += tmp_instr.len_instr;
+        ip += tmp_instr.len_instr; // Move pointer after instruction
         /* Checking stop flag */
-        if((tmp_instr.type_instr == LZO1X_FB_5_T) && (tmp_instr.dist == KB16)) {
+        if((tmp_instr.type_instr == LZO1X_FB_5_T) && (tmp_instr.dist == KB16)) { // this is conditions is a stop signal to algorithm. If algorithm see this, that means compressed input stream is ended.
             stop = true;
         } else {
             /* Execute instruction */
-            uint8_t *m_pos = op - tmp_instr.dist;
-            lzo1x_cpy_from_dict(&op, &m_pos, tmp_instr.length);
-            lzo1x_cpy_from_input_p(&ip, &op, tmp_instr.state);
-
-            int status_output_ptr = lzo1x_cmp_output_ptrs(op, op_end); 
+            uint8_t *m_pos = op - tmp_instr.dist; // Pointer set to place, where from output stream (dictionary) need to copy. 
+            lzo1x_cpy_from_dict(&op, &m_pos, tmp_instr.length); // Copy bytes from output buffer from m_pos to position op in output buffer. Both pointers must be go forward.
+            lzo1x_cpy_from_input_p(&ip, &op, tmp_instr.state);  // Copy bytes from input buffer to position op in output buffer. Both pointers must be go forward.
+            /* Check if output pointer don't go through out_end*/
+            int status_output_ptr = lzo1x_cmp_output_ptrs(op, out_end); 
             if(status_output_ptr != LZO_E_OK) {
-                return status_output_ptr;
+                return status_output_ptr;           // If something go wrong return with status error. In this case error is related to the output buffer
             }
         }
     }
-    return lzo1x_cmp_input_ptrs(ip, in_end);
+    *output_size = op - out; // This is final size of output buffer
+    return lzo1x_cmp_input_ptrs(ip, in_end); 
+    /*
+    * Last, need to check positions of ip(input pointer) and in_end(end of input stream). If ip != in_end, that means, something get wrong.
+    * We have two scenarios: 
+    *      1. Input data is not fully consumed or not consumed
+    *      2. Input data overan was happen.
+    */
 }

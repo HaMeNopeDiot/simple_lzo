@@ -69,7 +69,7 @@ void testbench_lzo_decoding_stream()
     uint8_t *output_stream = (uint8_t*)calloc(sizeof(input_stream) * 2, sizeof(uint8_t));
     size_t inpt_len = sizeof(input_stream);
     size_t outp_len = inpt_len * 2;
-    lzo1x_decompress_simple(input_stream, inpt_len, output_stream, outp_len);
+    lzo1x_decompress_simple(input_stream, inpt_len, output_stream, &outp_len);
 
     printf("Input:");
     for(size_t i = 0; i < inpt_len; i++) {

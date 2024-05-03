@@ -11,7 +11,7 @@ void show_help()
         "   -o            output file\n"
         "   -v            verbose\n"
         "   -b            bitstream\n"
-        "   -s            decompress mode from lzo simple\n"
+        "   -s            decompress mode from lzo simple (may unstable)\n"
     );
 }
 
