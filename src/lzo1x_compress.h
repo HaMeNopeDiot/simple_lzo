@@ -9,6 +9,7 @@
 #include "libfdt_env.h"
 #include "lzo.h"
 #include "align.h"
+#include "lzo1x_d_simple.h"
 
 size_t lzo1x_1_do_compress(const unsigned char *in, size_t in_len,
 		    unsigned char *out, size_t *out_len,

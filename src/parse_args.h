@@ -8,11 +8,12 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define ERRR_STATUS -1
-#define HELP_STATUS 0
-#define TEST_STATUS 1
-#define COMP_STATUS 2
-#define DCMP_STATUS 3
+#define ERRR_STATUS     -1
+#define HELP_STATUS     0
+#define TEST_STATUS     1
+#define COMP_STATUS     2
+#define DCMP_STATUS     3
+#define DCMP_STATUS_SMP 4
 
 typedef struct {
     char* input_file;

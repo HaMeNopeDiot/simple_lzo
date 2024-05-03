@@ -47,7 +47,7 @@ char* lzo_gpathsize(char* output_path)
 int lzo_compress(char* input_path, char* output_path, int lzo_ver)
 {
     file_buf_t* src = file_buf_read_file(input_path);
-    file_buf_t* dst = file_buf_init_osize(src->size_buf + DEFAULT_OUT_OVERWRITE_BUFFER);     //Size of dst can be more than src. That's why code allocate memory for dst more than src.
+    file_buf_t* dst = file_buf_init_osize(src->size_buf + DEFAULT_OUT_OVERWRITE_BUFFER + 10);     //Size of dst can be more than src. That's why code allocate memory for dst more than src.
     uint8_t *wrkmem = calloc(LZO1X_MEM_COMPRESS, sizeof(uint8_t));
     int lzo1x_1_status = lzo_compress_switch(src, dst, (void*)(wrkmem), lzo_ver);
     verbose("@ Compression status: %d\n", lzo1x_1_status);
@@ -119,4 +119,27 @@ int lzo_test(char* input_path, char* output_path, int lzo_ver)
     free(folder);
     free(path_tmp);
     return comp_status && dcmp_status ? 1: 0;
+}
+
+int lzo_simple_decode(char* input_path, char* output_path)
+{
+    file_buf_t* src = file_buf_read_file(input_path); // Try to read file
+    //Find file and read size of source (not compressed file)
+    char* size_file_tag = strdup(DEFAULT_SIZE_FILE_TAG);
+    char* size_file_format = strdup(DEFAULT_SIZE_FILE_FORMAT);
+    char* path_size_input = get_tag_file_name(input_path, size_file_tag, size_file_format, DEFAULT_SEPARATOR);
+    file_buf_t* src_size = file_buf_read_file(path_size_input);
+    size_t tmp_req = atoi((char*)src_size->buf);
+    file_buf_t* dst = file_buf_init_osize(tmp_req);
+    int lzo1x_1_dec_status = lzo1x_decode(src->buf, src->size_buf, dst->buf, (dst->size_buf));
+    verbose("@ Decompression status: %d\n", lzo1x_1_dec_status);
+    file_buf_write_file(output_path, dst); // Input in file
+    // Free memory
+    file_buf_free(src);
+    file_buf_free(src_size);
+    file_buf_free(dst);
+    free(size_file_format);
+    free(size_file_tag);
+    free(path_size_input);
+    return lzo1x_1_dec_status;
 }

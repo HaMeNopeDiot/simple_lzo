@@ -11,6 +11,7 @@ void show_help()
         "   -o            output file\n"
         "   -v            verbose\n"
         "   -b            bitstream\n"
+        "   -s            decompress mode from lzo simple\n"
     );
 }
 
@@ -40,7 +41,7 @@ prs_args_t* parse_args(int argc, char *argv[])
 {
     int result_opt = 0;
     prs_args_t* result = prs_args_init();
-    while((result_opt = getopt(argc, argv, "bhtdi:o:v")) != -1)
+    while((result_opt = getopt(argc, argv, "bhtdsi:o:v")) != -1)
     {
         switch(result_opt) {
             case 'h': 
@@ -54,6 +55,9 @@ prs_args_t* parse_args(int argc, char *argv[])
             case 'd': 
                 result->status = DCMP_STATUS;
             break; // decompress
+            case 's':
+                result->status = DCMP_STATUS_SMP;
+            break; // decompress simple
             case 'i': 
                 result->input_file = strdup(optarg);
             break; // input
