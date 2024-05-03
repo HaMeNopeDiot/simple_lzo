@@ -14,3 +14,5 @@ For help use -h flag. Below you can see list of arguments:
 
 In this code you can see two realizations for decompressor. One of them this from Kernel code, another myself realization in simple code. Both of them I tested on few examples, it's kinda works, but I don't can say, that it can broke.
 This algorithm working good if compress text data, yaml or xml files. In some cases algorithm can compress data into bigger value that was be.
+
+Also I used file "LZO stream format as understood by Linux's LZO decompressor" for understanding of work decompressor.
