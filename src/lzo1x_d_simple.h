@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "lzo.h"
 #include "file_buf.h"
 
 #define LZO1X_FB_8_T 8
@@ -72,6 +73,7 @@ typedef struct {
 
 #pragma pack(1)
 
+// first byte like: 1 L L D D D S S
 typedef struct {
     unsigned s: 2;
     unsigned d: 3;
@@ -79,6 +81,7 @@ typedef struct {
     unsigned prefix: 1;
 } lzo1x_8b_t;
 
+// first byte like: 0 1 L D D D S S
 typedef struct {
     unsigned s: 2;
     unsigned d: 3;
@@ -86,22 +89,26 @@ typedef struct {
     unsigned prefix: 2;
 } lzo1x_7b_t;
 
+// first byte like: 0 0 1 L L L L L
 typedef struct {
     unsigned l: 5;
     unsigned prefix: 3;
 } lzo1x_6b_t;
 
+// first byte like: 0 0 0 1 H L L L
 typedef struct {
     unsigned l: 3;
     unsigned h: 1;
     unsigned prefix: 4;
 } lzo1x_5b_t;
 
+// first byte like: 0 0 0 0 L L L L
 typedef struct {
     unsigned l: 4;
     unsigned prefix: 4;
 } lzo1x_4b0_t;
 
+// first byte like: 0 0 0 0 D D S S
 typedef struct {
     unsigned s: 2;
     unsigned d: 2;
@@ -125,9 +132,10 @@ typedef union
 
 /* NEW FUNCTIONS */
 
+// Decode one instruction. input pointer must be set on first byte. prev_state is requaired only for instructions from range [0..15]
 lzo1x_dins_t lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state);
-
-uint8_t lzo1x_decode(uint8_t *in, size_t input_size, uint8_t *out, size_t output_size);
+// Try to decompress input stream and put decompressed stream to out.
+int lzo1x_decompress_simple(uint8_t *in, size_t input_size, uint8_t *out, size_t *output_size);
 
 
 #endif /* LZO1X_D_SIMPLE_H */

@@ -82,4 +82,17 @@ static inline void put_unaligned_le32(u32 val, void *p)
 #define LZO_E_NOT_YET_IMPLEMENTED	(-9)
 #define LZO_E_INVALID_ARGUMENT		(-10)
 
+
+#define LZO_STR_E_OK					"LZO OK"
+#define LZO_STR_E_ERROR					"LZO ERROR"
+#define LZO_STR_E_OUT_OF_MEMORY			"LZO ERROR: out of memory"
+#define LZO_STR_E_NOT_COMPRESSIBLE		"LZO ERROR: not compressible"
+#define LZO_STR_E_INPUT_OVERRUN			"LZO ERROR: input overrun"
+#define LZO_STR_E_OUTPUT_OVERRUN		"LZO ERROR: output overrun"
+#define LZO_STR_E_LOOKBEHIND_OVERRUN	"LZO ERROR: lookbehind overrun"
+#define LZO_STR_E_EOF_NOT_FOUND			"LZO ERROR: EOF not found"
+#define LZO_STR_E_INPUT_NOT_CONSUMED	"LZO ERROR: input not consumed"
+#define LZO_STR_E_NOT_YET_IMPLEMENTED	"LZO ERROR: not yet implemented"
+#define LZO_STR_E_INVALID_ARGUMENT		"LZO ERROR: invalid argument"
+
 #endif
