@@ -26,6 +26,8 @@ To run this variant of lzo need to run in console:
 ```
 make
 ```
+In Makefile compiler set to gcc. If you don't have gcc, or want to use other, you need to rewrite compiler in Makefile.
+
 After build, you can use it. For get help note, try this:
 ```
 ./lzo1x -h
