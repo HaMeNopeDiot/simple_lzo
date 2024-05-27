@@ -132,7 +132,10 @@ typedef union
 
 /* NEW FUNCTIONS */
 
-// Decode one instruction. input pointer must be set on first byte. prev_state is requaired only for instructions from range [0..15]
+
+
+/* Decode one instruction. input pointer must be set on first byte. 
+** prev_state is requaired only for instructions from range [0..15]  */
 lzo1x_dins_t lzo1x_decode_instr(uint8_t *ip, uint32_t prev_state);
 // Try to decompress input stream and put decompressed stream to out.
 int lzo1x_decompress_simple(uint8_t *in, size_t input_size, uint8_t *out, size_t *output_size);
