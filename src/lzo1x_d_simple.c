@@ -2,6 +2,60 @@
 
 /* NEW FUNCTIONS */
 
+/* STATIC PROTOTYPE FUNCTIONS */
+
+/* Count extra literals to copy from output buffer */
+static uint32_t lzo1x_cnt_length(uint8_t** ip, uint32_t length, uint16_t offset);
+
+/* Initialization of structure. This structure don't have any memory allocate, \
+** because of that structure don't have any free memory function.
+*/
+static lzo1x_dins_t lzo1x_dins_init();
+
+/* Read first byte instruction and return type of instruction by first byte */
+static uint8_t lzo1x_get_type_instr(lzo1x_fb_t first_b);
+
+/* Reading the parameters of an instruction belonging to a type from the range [128..255] */
+static lzo1x_dins_t lzo1x_fill_result_8(uint8_t* ip, lzo1x_fb_t first_b);
+
+/* Reading the parameters of an instruction belonging to a type from the range [64..127] */
+static lzo1x_dins_t lzo1x_fill_result_7(uint8_t* ip, lzo1x_fb_t first_b);
+
+/* Reading the parameters of an instruction belonging to a type from the range [32..63] */
+static lzo1x_dins_t lzo1x_fill_result_6(uint8_t* ip, lzo1x_fb_t first_b);
+
+/* Reading the parameters of an instruction belonging to a type from the range [16..31] */
+static lzo1x_dins_t lzo1x_fill_result_5(uint8_t* ip, lzo1x_fb_t first_b);
+
+/* Reading the parameters of an instruction belonging to a type from the range [0..15] 
+** Only this type instruction need to know state of previous
+*/
+static lzo1x_dins_t lzo1x_fill_result_4(uint8_t* ip, lzo1x_fb_t first_b, uint32_t prev_stats);
+
+/* By type of instruction fill parameters for executing instruction */
+static lzo1x_dins_t lzo1x_get_data_ins(uint8_t *ip, lzo1x_fb_t first_b, uint8_t type_of_instruction, uint32_t prev_state);
+
+/* Copy [state] bytes from input buffer. All pointers must move forward */
+static void lzo1x_cpy_from_input_p(uint8_t **ip, uint8_t **op, uint32_t state);
+
+/* Copy [state] bytes from output buffer. All pointers must move forward */
+static void lzo1x_cpy_from_dict(uint8_t **op, uint8_t **dp, uint32_t length);
+
+/* Check input pointer with pointer of end input buffer. Return status:
+** LZO_E_OK                 - input pointer = end input buffer 
+** LZO_E_INPUT_NOT_CONSUMED - input pointer < end input buffer
+** LZO_E_INPUT_OVERRUN      - input pointer > end input buffer
+*/
+static int lzo1x_cmp_input_ptrs(const uint8_t *ip, const uint8_t *ip_end);
+
+/* Check output pointer with pointer of end output buffer. Return status:
+** LZO_E_OK                 - output pointer =< end output buffer
+** LZO_E_OUTPUT_OVERRUN     - output pointer >  end output buffer
+*/
+static int lzo1x_cmp_output_ptrs(const uint8_t *op, const uint8_t *op_end);
+
+/* FUNCTIONS */
+
 static uint32_t lzo1x_cnt_length(uint8_t** ip, uint32_t length, uint16_t offset)
 {
     uint32_t tmp_length = length;
