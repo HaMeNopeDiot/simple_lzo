@@ -55,6 +55,7 @@ typedef struct {
 } lzo1x_dins_t;
 
 
+
 // 0 0 0 0 X X X X  (0..15)
 // 0 0 0 1 H L L L  (16..31)
 // 0 0 1 L L L L L  (32..63)
@@ -131,8 +132,6 @@ typedef union
 /* END OF FIRST BYTE STRUCTURES */
 
 /* NEW FUNCTIONS */
-
-
 
 /* Decode one instruction. input pointer must be set on first byte. 
 ** prev_state is requaired only for instructions from range [0..15]  */

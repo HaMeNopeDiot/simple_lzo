@@ -261,6 +261,10 @@ static int lzo1x_cmp_output_ptrs(const uint8_t *op, const uint8_t *op_end)
     return op > op_end? LZO_E_OUTPUT_OVERRUN: LZO_E_OK;
 }
 
+void lzo1x_dins_print(lzo1x_dins_t inst) {
+    printf("type %1d ::: STT: 0x%3x   LEN: 0x%3x   DST: 0x%5x   LIN: 0x%2x\n", inst.type_instr, inst.state, inst.length, inst.dist, inst.len_instr);
+}
+
 int lzo1x_decompress_simple(uint8_t *in, size_t input_size, uint8_t *out, size_t *output_size)
 {
     /* Start */
@@ -284,12 +288,14 @@ int lzo1x_decompress_simple(uint8_t *in, size_t input_size, uint8_t *out, size_t
             lzo1x_cpy_from_input_p(&ip, &op, tmp_instr.state); // Copy bytes from input buffer to position op in output buffer. Both pointers must be go forward.
         }
     }
+    
     /* Main part */
     bool stop = false;
     uint32_t prev_state = tmp_instr.state; // If first byte was a instruction, that means state can be value no 0.
     while(!stop) {
         /* Decode instruction */
         lzo1x_dins_t tmp_instr = lzo1x_decode_instr(ip, prev_state);
+        lzo1x_dins_print(tmp_instr);
         ip += tmp_instr.len_instr; // Move pointer after instruction
         /* Checking stop flag */
         if((tmp_instr.type_instr == LZO1X_FB_5_T) && (tmp_instr.dist == KB16)) { // this is conditions is a stop signal to algorithm. If algorithm see this, that means compressed input stream is ended.
@@ -315,3 +321,4 @@ int lzo1x_decompress_simple(uint8_t *in, size_t input_size, uint8_t *out, size_t
     *      2. Input data overan was happen.
     */
 }
+
